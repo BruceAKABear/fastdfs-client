@@ -1,13 +1,15 @@
 package pro.dengyi.fastdfs.service.impl;
 
-import pro.dengyi.fastdfs.service.FastdfsService;
+import pro.dengyi.fastdfs.service.UploadService;
 
 /**
+ * 文件上传服务了接口实现类
+ *
  * @author 邓艺
  * @version v1.0
- * @date 2018-12-25 16:54
+ * @date 2018-12-26 14:25
  */
-public class FastdfsServiceImpl implements FastdfsService {
+public class UploadServiceImpl implements UploadService {
 
     @Override
     public String uploadFile() {

@@ -11,11 +11,30 @@ import lombok.Data;
  */
 @Data
 public class ClientProterties {
-    private Integer connectTimeout;
+    /**
+     * tracker集合，必须用英语逗号连接
+     */
+    private String trackerList;
+    /**
+     * 连接上tracker服务器的时间，默认为5s
+     */
+    private Integer connectTimeout = 5;
+    /**
+     * 网络超时时间
+     */
     private Integer networkTimeout;
+    /**
+     * 编码ISO8859-1 UTF-8
+     */
     private String charset;
     private Integer trackerPort;
+    /**
+     * 是否开启放到链功能，默认为false
+     */
     private Boolean openAntiSteal;
+    /**
+     * 防盗链秘钥
+     */
     private String secretKey;
 
 }
