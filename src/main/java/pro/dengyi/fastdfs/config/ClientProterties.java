@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class ClientProterties {
     /**
-     * tracker集合，必须用英语逗号连接
+     * tracker集合
      */
     private String trackerList;
     /**

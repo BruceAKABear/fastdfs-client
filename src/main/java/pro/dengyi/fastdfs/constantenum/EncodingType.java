@@ -8,7 +8,21 @@ package pro.dengyi.fastdfs.constantenum;
  * @date 2018-12-26 13:24
  */
 public enum EncodingType {
-    ISO8859,
-    UTF8
+    /**
+     * 8859-1编码
+     */
+    ISO8859("ISO8859-1"),
+    /**
+     * u8编码
+     */
+    UTF8("UTF-8");
+    private String value;
 
+    private EncodingType(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

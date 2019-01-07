@@ -29,5 +29,9 @@ public class FileInfo {
      * 校验类型，默认crc32
      */
     private String checkType;
+    /**
+     * 元数据
+     */
+    private String[] metaList;
 
 }

@@ -12,7 +12,12 @@ import pro.dengyi.fastdfs.service.UploadService;
 public class UploadServiceImpl implements UploadService {
 
     @Override
-    public String uploadFile() {
+    public String uploadFile(String groupName, byte[] fileBuff, String fileExtName, String[] metaList) {
+        return null;
+    }
+
+    @Override
+    public String uploadAppenderFile() {
         return null;
     }
 
@@ -25,4 +30,10 @@ public class UploadServiceImpl implements UploadService {
     public Boolean updateFile() {
         return null;
     }
+
+    private String doUploadFile(byte cmd, String groupName, String masterFilename, String prefixName, String fileExtName, long fileSize, String[] metaList) {
+
+        return null;
+    }
+
 }
