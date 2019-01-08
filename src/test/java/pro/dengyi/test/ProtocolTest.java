@@ -1,12 +1,18 @@
 package pro.dengyi.test;
 
 import org.junit.Test;
+import pro.dengyi.fastdfs.connection.ConnectionFactory;
 import pro.dengyi.fastdfs.constantenum.EncodingType;
+import pro.dengyi.fastdfs.constantenum.SystemCode;
 import pro.dengyi.fastdfs.entity.MetaData;
 import pro.dengyi.fastdfs.utils.FileNameUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
@@ -130,8 +136,9 @@ public class ProtocolTest {
     @Test
     public void demo10() {
         String fileName = "202CB962AC59075B964B07152D234B70.jpg";
-        int i = fileName.indexOf('.', fileName.length() - 7);
-        System.out.println(i);
+        String dddd = FileNameUtil.generateSlaveFilename(fileName, "dddd", "jpg");
+
+        System.out.println(dddd);
 
     }
 
@@ -149,7 +156,25 @@ public class ProtocolTest {
     public void demo12() throws FileNotFoundException {
         File file = new File("C:\\解密文件\\1.jpg");
         MetaData metaData = new MetaData();
+        System.out.println(SystemCode.STORAGE_PROTO_CMD_DELETE_FILE.getValue());
 
+    }
+
+    @Test
+    public void demo13() throws IOException {
+        Socket socket = new Socket("192.168.0.177", 22122);
+    }
+
+    @Test
+    public void demo14() {
+        Charset utf8 = StandardCharsets.UTF_8;
+        System.out.println(utf8);
+    }
+
+    @Test
+    public void demo15() {
+        ConnectionFactory connection = ConnectionFactory.getConnection();
+        System.out.println(connection.getConnectTimeout());
     }
 
 
