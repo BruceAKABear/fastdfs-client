@@ -25,7 +25,7 @@ public class FileNameUtil {
      * @author 邓艺
      * @date 2019/1/7 14:13
      */
-    public static String generateSlaveFilename(@NotNull String masterFilename, String sufixName, String extName) throws FastdfsException {
+    public static String generateSlaveFilename(@NotNull String masterFilename, @NotNull String sufixName, String extName) throws FastdfsException {
         //文件名最小为34，md5 32位+.+ 一位扩展名
         if (masterFilename.length() < 34) {
             throw new FastdfsException("主文件名" + masterFilename + "长度非法");
@@ -34,8 +34,12 @@ public class FileNameUtil {
         if (StringUtils.isBlank(extName)) {
             extName = getExtNameWithDot(masterFilename);
         }
-        if (sufixName.equals("-m")) {
-            throw new FastdfsException("后缀名" + sufixName + "非法,不能包含-m");
+        if (StringUtils.isNotBlank(sufixName)) {
+            if (sufixName.equals("-m")) {
+                throw new FastdfsException("后缀名" + sufixName + "非法,不能包含-m");
+            }
+        } else {
+            throw new FastdfsException("后缀名非法，后缀名不能为空字符串");
         }
         if (extName.indexOf(".") == 0) {
             if (extName.lastIndexOf(".") == 0) {

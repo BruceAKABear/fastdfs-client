@@ -45,6 +45,18 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <!--输入输出流之间的转换-->
+        <dependency>
+            <groupId>org.ostermiller</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.07.00</version>
+        </dependency>
+        <!--缩略图框架-->
+        <dependency>
+            <groupId>net.coobird</groupId>
+            <artifactId>thumbnailator</artifactId>
+            <version>0.4.8</version>
+        </dependency>
 
 
     </dependencies>
