@@ -4,7 +4,6 @@ import org.junit.Test;
 import pro.dengyi.fastdfs.connection.ConnectionFactory;
 import pro.dengyi.fastdfs.constantenum.EncodingType;
 import pro.dengyi.fastdfs.constantenum.SystemCode;
-import pro.dengyi.fastdfs.entity.MetaData;
 import pro.dengyi.fastdfs.utils.FileNameUtil;
 
 import java.io.File;
@@ -155,7 +154,6 @@ public class ProtocolTest {
     @Test
     public void demo12() throws FileNotFoundException {
         File file = new File("C:\\解密文件\\1.jpg");
-        MetaData metaData = new MetaData();
         System.out.println(SystemCode.STORAGE_PROTO_CMD_DELETE_FILE.getValue());
 
     }
