@@ -25,7 +25,7 @@ public class ProtocolUtil {
      * @author 邓艺
      * @date 2019/1/7 11:11
      */
-    public static byte[] generateProtoHead(byte cmd, Long packagelength, byte status) {
+    public static byte[] generateProtoHeader(byte cmd, Long packagelength, byte status) {
         //标准报文头部长10位
         byte[] protocolHeader = new byte[10];
         //用字节数组表示包的长度

@@ -29,4 +29,16 @@ public class IpAddressUtil {
         }
     }
 
+    /**
+     * 从文件分享url中提取出fid
+     *
+     * @param shareUrl 分享url
+     * @return java.lang.String
+     * @author 邓艺
+     * @date 2019/1/10 13:24
+     */
+    public static String getFidFromShareUrl(String shareUrl) {
+        return shareUrl.substring(shareUrl.indexOf("/", 8) + 1);
+    }
+
 }

@@ -177,5 +177,30 @@ public class ProtocolTest {
         System.out.println(connection.getConnectTimeout());
     }
 
+    @Test
+    public void demo16() {
+        String s = "\u0004";
+        System.out.println(s);
+    }
+
+    @Test
+    public void demo17() {
+        String s = "http://192.168.0.188:8888/group1/xxx";
+        System.out.println(s.indexOf("/"));
+        System.out.println(s.indexOf("/", 8));
+        System.out.println(s.substring(s.indexOf("/", 8) + 1));
+    }
+
+    @Test
+    public void demo18() {
+        String fid = "group1/M00/00/00/wKgz6lnduTeAMdrcAAEoRmXZPp870.jpeg";
+        String[] groupNameAndRemoteFileNameFromFid = FileNameUtil.getGroupNameAndRemoteFileNameFromFid(fid);
+        for (String s : groupNameAndRemoteFileNameFromFid) {
+            System.out.println(s);
+        }
+
+    }
+
+
 
 }

@@ -40,8 +40,8 @@ public class ConnectionFactory {
      */
     private String secretKey = "FastDFS1234567890";
 
-    public static ConnectionFactory getConnection() {
-        return ourInstance;
+    public static Connection getConnection() {
+        return null;
     }
 
     private ConnectionFactory() {
