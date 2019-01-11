@@ -1,7 +1,11 @@
 package pro.dengyi.fastdfs.core;
 
+import lombok.extern.slf4j.Slf4j;
 import pro.dengyi.fastdfs.connection.Connection;
 import pro.dengyi.fastdfs.connection.ConnectionFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 存储服务器核心类
@@ -10,10 +14,11 @@ import pro.dengyi.fastdfs.connection.ConnectionFactory;
  * @version v1.0
  * @date 2018-12-25 16:15
  */
+@Slf4j
 public class StorageClient {
 
     /**
-     * 删除文件
+     * 文件删除方法
      *
      * @param groupName 组名
      * @param remoteFileName 远程文件名
@@ -24,8 +29,19 @@ public class StorageClient {
     public Boolean deleteFile(String groupName, String remoteFileName) {
         Connection connection = ConnectionFactory.getConnection();
         byte cmd = 111;
-        connection.sendPackage(cmd, groupName, remoteFileName);
-        return false;
+        try {
+            connection.sendPackage(cmd, groupName, remoteFileName);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("删除文件时io异常");
+            return false;
+        }
+    }
+
+    public String[] doUploadFile(byte controlCode, String groupName, String masterFileName, String suffixName, String extName, Long fileSize,
+            InputStream fileInputStream) {
+        return null;
     }
 
 }
