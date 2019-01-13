@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
@@ -130,7 +131,8 @@ public class PictureTest {
     File file = new File("C:\\Users\\dengyi\\Desktop\\IMG_20170521_200051.jpg");
     IImageMetadata metadata = Sanselan.getMetadata(file);
 
-    for (Object item : metadata.getItems()) {
+      ArrayList items = metadata.getItems();
+      for (Object item : metadata.getItems()) {
       System.out.println(item);
     }
     //System.out.println(metadata);

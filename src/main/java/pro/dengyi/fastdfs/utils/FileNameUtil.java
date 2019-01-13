@@ -64,4 +64,19 @@ public class FileNameUtil {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
+    /**
+     * 根据fid获取组名和远程文件名
+     *
+     * @param fid 文件id
+     * @return java.lang.String[]
+     * @author 邓艺
+     * @date 2019/1/10 14:34
+     */
+    public static String[] getGroupNameAndRemoteFileNameFromFid(@NotNull String fid) {
+        int i = fid.indexOf("/");
+        String groupName = fid.substring(0, i);
+        String remoteFileName = fid.substring(i + 1);
+        return new String[]{groupName, remoteFileName};
+    }
+
 }

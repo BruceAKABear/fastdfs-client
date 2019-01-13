@@ -11,7 +11,11 @@ public enum ProtocolEnum {
     /**
      * 协议报文头部长度，一共10位
      */
-    PROTOCOL_HEAD_LENGTH(10);
+    PROTOCOL_HEAD_LENGTH(10),
+    /**
+     * 标准组名字节数组长度
+     */
+    STANDARD_GROUPNAMEBYTES_LENGTH(16);
 
     ProtocolEnum(Integer value) {
         this.value = value;

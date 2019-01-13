@@ -1,33 +1,37 @@
 package pro.dengyi.fastdfs.constantenum;
 
 /**
- * 系统代码枚举类
+ * 系统控制编码
  *
  * @author 邓艺
  * @version v1.0
- * @date 2018-12-26 15:43
+ * @date 2019-01-11 10:55
  */
-public enum SystemCode {
+public enum ControlCode {
     /**
      * 上传文件系统命令码
      */
-    STORAGE_PROTO_CMD_UPLOAD_FILE(11),
+    UPLOAD((byte) 11),
     /**
      * 删除文件命令码
      */
-    STORAGE_PROTO_CMD_DELETE_FILE(12),
+    DELETE((byte) 12),
     /**
      * 下载文件命令码
      */
-    STORAGE_PROTO_CMD_DOWNLOAD_FILE(14);
+    DOWNLOAD((byte) 14),
+    /**
+     * 断点续传
+     */
+    APPEND((byte) 24);
 
-    private Integer value;
+    private Byte value;
 
-    SystemCode(Integer value) {
+    ControlCode(Byte value) {
         this.value = value;
     }
 
-    public Integer getValue() {
+    public Byte getValue() {
         return value;
     }
 }
