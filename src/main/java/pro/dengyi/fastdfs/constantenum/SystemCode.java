@@ -19,7 +19,11 @@ public enum SystemCode {
     /**
      * 下载文件命令码
      */
-    STORAGE_PROTO_CMD_DOWNLOAD_FILE(14);
+    STORAGE_PROTO_CMD_DOWNLOAD_FILE(14),
+    /**
+     * 解析tracker返回命令
+     */
+    TRACKER_RESPONSE(100);
 
     private Integer value;
 
@@ -29,5 +33,4 @@ public enum SystemCode {
 
     public Integer getValue() {
         return value;
-    }
-}
+    }}

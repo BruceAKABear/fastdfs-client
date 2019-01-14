@@ -5,7 +5,9 @@ import pro.dengyi.fastdfs.connection.ConnectionFactory;
 import pro.dengyi.fastdfs.constantenum.EncodingType;
 import pro.dengyi.fastdfs.constantenum.SystemCode;
 import pro.dengyi.fastdfs.utils.FileNameUtil;
+import pro.dengyi.fastdfs.utils.ProtocolUtil;
 
+import javax.swing.plaf.TreeUI;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -198,5 +200,32 @@ public class ProtocolTest {
         }
 
     }
+
+    @Test
+    public void demo19() throws IOException {
+        //通过tracker获取storage
+        byte[] bytes = ProtocolUtil.generateProtoHeader((byte) 104, 16L, (byte) 0);
+        Socket socket = new Socket("116.62.195.66", 22122);
+        socket.getOutputStream().write(bytes);
+        byte[] bytes1 = new byte[16];
+        String groupName = "group1";
+        byte[] bytes2 = groupName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(bytes2, 0, bytes1, 0, bytes2.length);
+        socket.getOutputStream().write(bytes1);
+//        int read = socket.getInputStream().read(new byte[10]);
+//        System.out.println(read);
+        //0000000401  0001031141111171124900000000004949544654504649575346545400000000892160
+      while (true){
+          ProtocolUtil.recvHeader(socket.getInputStream(),(byte) 4,40);
+      }
+
+
+    }
+
+     @Test
+     public void demo20(){
+         byte b = 127;
+         System.out.println(b);
+     }
 
 }

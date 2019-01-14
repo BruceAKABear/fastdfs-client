@@ -31,15 +31,7 @@ public class StorageClient {
      */
     public Boolean deleteFile(String groupName, String remoteFileName) {
         Connection connection = ConnectionFactory.getConnection();
-        byte cmd = 111;
-        try {
-            connection.sendPackage(cmd, groupName, remoteFileName);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            log.error("删除文件时io异常");
-            return false;
-        }
+        return null;
     }
 
     /**

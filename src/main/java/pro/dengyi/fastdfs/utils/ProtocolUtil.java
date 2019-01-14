@@ -2,6 +2,8 @@ package pro.dengyi.fastdfs.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 
@@ -28,10 +30,12 @@ public class ProtocolUtil {
     public static byte[] generateProtoHeader(byte cmd, Long packagelength, byte status) {
         //标准报文头部长10位
         byte[] protocolHeader = new byte[10];
-        //用字节数组表示包的长度
+        //第0-7用字节数组表示包的长度
         byte[] lengthInByteArray = long2buff(packagelength);
         System.arraycopy(lengthInByteArray, 0, protocolHeader, 0, 8);
+        //第8位表示控制字
         protocolHeader[8] = cmd;
+        //第9位表示命令状态，应该为0
         protocolHeader[9] = status;
         return protocolHeader;
     }
@@ -139,6 +143,35 @@ public class ProtocolUtil {
         System.arraycopy(bsKey, 0, buff, bsFilename.length, bsKey.length);
         System.arraycopy(bsTimestamp, 0, buff, bsFilename.length + bsKey.length, bsTimestamp.length);
         return Md5Util.encode(buff);
+    }
+
+    public static String recvHeader(InputStream in, byte expect_cmd, long expect_body_len) throws IOException {
+        byte[] header;
+        int bytes;
+        long pkg_len;
+
+        header = new byte[10];
+
+        if ((bytes = in.read(header)) != header.length) {
+            throw new IOException("recv package size " + bytes + " != " + header.length);
+        }
+
+        if (header[8] != expect_cmd) {
+        }
+
+        if (header[9] != 0) {
+        }
+
+        pkg_len = buff2long(header, 0);
+        if (pkg_len < 0) {
+            throw new IOException("recv body length: " + pkg_len + " < 0!");
+        }
+
+        if (expect_body_len >= 0 && pkg_len != expect_body_len) {
+            throw new IOException("recv body length: " + pkg_len + " is not correct, expect length: " + expect_body_len);
+        }
+
+        return null;
     }
 
 }
