@@ -1,6 +1,10 @@
 package pro.dengyi.fastdfs.utils;
 
+import com.google.common.primitives.Longs;
 import lombok.extern.slf4j.Slf4j;
+import pro.dengyi.fastdfs.entity.ReceiveData;
+import pro.dengyi.fastdfs.entity.ReceiveHeader;
+import pro.dengyi.fastdfs.exception.FastdfsException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * 协议工具类
+ * 通讯协议工具类
  *
  * @author 邓艺
  * @version v1.0
@@ -19,25 +23,87 @@ public class ProtocolUtil {
 
     /**
      * 生成协议头工具
+     * 标准报文头部长度为10个字节，前8个字节表示数据包长度,第8个字节表示控制字，最后一个字节表示状态必须为0
      *
-     * @param cmd 命令编码
+     * @param controlCode 系统命令字
      * @param packagelength 数据包长度
      * @param status 状态编码
      * @return byte[] byte数组
      * @author 邓艺
      * @date 2019/1/7 11:11
      */
-    public static byte[] generateProtoHeader(byte cmd, Long packagelength, byte status) {
+    public static byte[] getProtoHeader(byte controlCode, Long packagelength, byte status) {
         //标准报文头部长10位
         byte[] protocolHeader = new byte[10];
         //第0-7用字节数组表示包的长度
-        byte[] lengthInByteArray = long2buff(packagelength);
+        byte[] lengthInByteArray = long2ByteArray(packagelength);
+        //使用arraycopy效率较高
         System.arraycopy(lengthInByteArray, 0, protocolHeader, 0, 8);
         //第8位表示控制字
-        protocolHeader[8] = cmd;
+        protocolHeader[8] = controlCode;
         //第9位表示命令状态，应该为0
         protocolHeader[9] = status;
         return protocolHeader;
+    }
+
+    /**
+     * 从输入流中读取标准协议10个字节长度报文头部
+     *
+     * @param inputStream 输入流
+     * @param controlCode 控制字
+     * @param dataBodyLength 数据长度
+     * @return Map
+     * @author 邓艺
+     * @date 2019/1/15 15:16
+     */
+    public static ReceiveHeader getResponseHeader(InputStream inputStream, Byte controlCode, Long dataBodyLength) throws IOException, FastdfsException {
+        byte[] responseHeaderBytes = new byte[10];
+        //正确性校验
+        if (inputStream.read(responseHeaderBytes) != 10) {
+            throw new FastdfsException("实际读取到的报文头部长度非法，长度不为10个字节");
+        }
+        if (responseHeaderBytes[0] != controlCode) {
+            throw new FastdfsException("响应报文头部控制字非法，控制字和需要控制字不相同");
+        }
+        if (responseHeaderBytes[0] != (byte) 0) {
+            throw new FastdfsException("服务器响应状态字为异常");
+        }
+        if (ProtocolUtil.byteArray2Long(responseHeaderBytes, 0) < 0) {
+            throw new FastdfsException("数据体中实际数据长度小于0异常");
+
+        } else {
+            if (!ProtocolUtil.byteArray2Long(responseHeaderBytes, 0).equals(dataBodyLength)) {
+                throw new FastdfsException("收取到的数据包长度不等于需要的数据包长度");
+            }
+        }
+        //将数据解析封装返回
+        return new ReceiveHeader((byte) 0, ProtocolUtil.byteArray2Long(responseHeaderBytes, 0));
+    }
+
+    /**
+     * 获取响应的数据内容
+     *
+     * @param inputStream 输入流
+     * @param controlCode 控制字
+     * @param dataBodyLength 数据长度
+     * @return ReceiveData
+     * @author 邓艺
+     * @date 2019/1/15 16:02
+     */
+    public static ReceiveData getResponseData(InputStream inputStream, Byte controlCode, Long dataBodyLength) throws IOException, FastdfsException {
+        ReceiveHeader responseHeader = getResponseHeader(inputStream, controlCode, dataBodyLength);
+        //如果服务器响应异常
+        if (responseHeader.getErrorNo() != 0) {
+            return new ReceiveData((byte) 1, null);
+        } else {
+            //服务器响应正常，读取数据
+            byte[] dataBody = new byte[Math.toIntExact(responseHeader.getDataBodyLength())];
+            if (inputStream.read(dataBody) != Math.toIntExact(responseHeader.getDataBodyLength())) {
+                throw new FastdfsException("实际读取的字节数非法");
+            }
+            return new ReceiveData((byte) 0, dataBody);
+        }
+
     }
 
     /**
@@ -48,17 +114,8 @@ public class ProtocolUtil {
      * @author 邓艺
      * @date 2019/1/7 13:21
      */
-    public static byte[] long2buff(Long packagelength) {
-        byte[] bs = new byte[8];
-        bs[0] = (byte) ((packagelength >> 56) & 0xFF);
-        bs[1] = (byte) ((packagelength >> 48) & 0xFF);
-        bs[2] = (byte) ((packagelength >> 40) & 0xFF);
-        bs[3] = (byte) ((packagelength >> 32) & 0xFF);
-        bs[4] = (byte) ((packagelength >> 24) & 0xFF);
-        bs[5] = (byte) ((packagelength >> 16) & 0xFF);
-        bs[6] = (byte) ((packagelength >> 8) & 0xFF);
-        bs[7] = (byte) (packagelength & 0xFF);
-        return bs;
+    public static byte[] long2ByteArray(Long packagelength) {
+        return Longs.toByteArray(packagelength);
     }
 
     /**
@@ -70,15 +127,8 @@ public class ProtocolUtil {
      * @author 邓艺
      * @date 2019/1/7 13:39
      */
-    public static Long buff2long(byte[] bs, Integer offset) {
-        return (((long) (bs[offset] >= 0 ? bs[offset] : 256 + bs[offset])) << 56) | (((long) (bs[offset + 1] >= 0 ? bs[offset + 1] : 256 + bs[offset + 1]))
-                << 48) | (((long) (bs[offset + 2] >= 0 ? bs[offset + 2] : 256 + bs[offset + 2])) << 40) | (
-                ((long) (bs[offset + 3] >= 0 ? bs[offset + 3] : 256 + bs[offset + 3])) << 32) | (
-                ((long) (bs[offset + 4] >= 0 ? bs[offset + 4] : 256 + bs[offset + 4])) << 24) | (
-                ((long) (bs[offset + 5] >= 0 ? bs[offset + 5] : 256 + bs[offset + 5])) << 16) | (
-                ((long) (bs[offset + 6] >= 0 ? bs[offset + 6] : 256 + bs[offset + 6])) << 8) | ((long) (bs[offset + 7] >= 0 ?
-                bs[offset + 7] :
-                256 + bs[offset + 7]));
+    public static Long byteArray2Long(byte[] bs, Integer offset) {
+        return Longs.fromByteArray(bs);
     }
 
     /**
@@ -90,7 +140,8 @@ public class ProtocolUtil {
      * @author 邓艺
      * @date 2019/1/7 13:41
      */
-    public static Integer buff2int(byte[] bs, Integer offset) {
+    public static Integer byteArray2Int(byte[] bs, Integer offset) {
+
         return (((int) (bs[offset] >= 0 ? bs[offset] : 256 + bs[offset])) << 24) | (((int) (bs[offset + 1] >= 0 ? bs[offset + 1] : 256 + bs[offset + 1])) << 16)
                 | (((int) (bs[offset + 2] >= 0 ? bs[offset + 2] : 256 + bs[offset + 2])) << 8) | ((int) (bs[offset + 3] >= 0 ?
                 bs[offset + 3] :
@@ -143,35 +194,6 @@ public class ProtocolUtil {
         System.arraycopy(bsKey, 0, buff, bsFilename.length, bsKey.length);
         System.arraycopy(bsTimestamp, 0, buff, bsFilename.length + bsKey.length, bsTimestamp.length);
         return Md5Util.encode(buff);
-    }
-
-    public static String recvHeader(InputStream in, byte expect_cmd, long expect_body_len) throws IOException {
-        byte[] header;
-        int bytes;
-        long pkg_len;
-
-        header = new byte[10];
-
-        if ((bytes = in.read(header)) != header.length) {
-            throw new IOException("recv package size " + bytes + " != " + header.length);
-        }
-
-        if (header[8] != expect_cmd) {
-        }
-
-        if (header[9] != 0) {
-        }
-
-        pkg_len = buff2long(header, 0);
-        if (pkg_len < 0) {
-            throw new IOException("recv body length: " + pkg_len + " < 0!");
-        }
-
-        if (expect_body_len >= 0 && pkg_len != expect_body_len) {
-            throw new IOException("recv body length: " + pkg_len + " is not correct, expect length: " + expect_body_len);
-        }
-
-        return null;
     }
 
 }

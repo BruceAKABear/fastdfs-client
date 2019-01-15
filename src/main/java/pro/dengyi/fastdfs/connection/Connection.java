@@ -37,7 +37,7 @@ public class Connection {
         //获取远程文件名字节数组
         byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
         //产生报文头16为组名标准长度
-        byte[] headerBytes = ProtocolUtil.generateProtoHeader(controlCode, (long) (16 + remoteFileNameBytes.length), (byte) 0);
+        byte[] headerBytes = ProtocolUtil.getProtoHeader(controlCode, (long) (16 + remoteFileNameBytes.length), (byte) 0);
         //决定封装组名的数据及长度
         byte[] originalBytes = groupName.getBytes(StandardCharsets.UTF_8);
         byte[] groupNameBytes = new byte[16];

@@ -2,7 +2,6 @@ package pro.dengyi.test;
 
 import org.junit.Test;
 import pro.dengyi.fastdfs.connection.Connection;
-import pro.dengyi.fastdfs.constantenum.ControlCode;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -14,6 +13,9 @@ import java.net.Socket;
  */
 public class UseTest {
 
+    /**
+     * 上传文件
+     */
     @Test
     public void demo1() {
         //1. 设置参数
@@ -23,6 +25,11 @@ public class UseTest {
 
     }
 
+    /**
+     * 删除文件
+     *
+     * @throws IOException
+     */
     @Test
     public void demo2() throws IOException {
         //直接测试删除

@@ -1,13 +1,15 @@
 package pro.dengyi.fastdfs.core;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import pro.dengyi.fastdfs.connection.Connection;
 import pro.dengyi.fastdfs.connection.ConnectionFactory;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 /**
@@ -18,7 +20,7 @@ import java.util.ArrayList;
  * @date 2018-12-25 16:15
  */
 @Slf4j
-public class StorageClient {
+public class Storage {
 
     /**
      * 文件删除方法
@@ -50,7 +52,7 @@ public class StorageClient {
         Connection connection = ConnectionFactory.getConnection();
         //产生报文头部字节数组
         //TODO 为什么是15？
-        byte[] protoHeaderBytes = ProtocolUtil.generateProtoHeader(ControlCode.UPLOAD.getValue(), 15 + fileSize, (byte) 0);
+        byte[] protoHeaderBytes = ProtocolUtil.getProtoHeader(ControlCode.UPLOAD.getValue(), 15 + fileSize, (byte) 0);
         //整体包长度
         byte[] wholePackage = new byte[25];
 
