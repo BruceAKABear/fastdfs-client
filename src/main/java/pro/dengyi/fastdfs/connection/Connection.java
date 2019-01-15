@@ -33,7 +33,7 @@ public class Connection {
      * @author 邓艺
      * @date 2019/1/11 10:52
      */
-    public void sendPackage(byte controlCode, String groupName, String remoteFileName) throws IOException {
+    public  static void sendPackage(byte controlCode, String groupName, String remoteFileName,Socket socket) throws IOException {
         //获取远程文件名字节数组
         byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
         //产生报文头16为组名标准长度
@@ -52,7 +52,6 @@ public class Connection {
         System.arraycopy(groupNameBytes, 0, wholePackage, 10, 16);
         System.arraycopy(remoteFileNameBytes, 0, wholePackage, 26, remoteFileNameBytes.length);
         //发送包
-        Socket socket = new Socket();
         socket.getOutputStream().write(wholePackage);
     }
 }

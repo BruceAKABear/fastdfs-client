@@ -1,6 +1,8 @@
 package pro.dengyi.fastdfs.connection;
 
 import lombok.Data;
+import org.apache.commons.lang3.ArrayUtils;
+import pro.dengyi.fastdfs.exception.FastdfsException;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +24,7 @@ public class ConnectionFactory {
     /**
      * tracker集合
      */
-    private String[] trackers;
+    private static String[] trackers;
     /**
      * tracker连接超时时间，单位为毫秒
      */
@@ -40,7 +42,29 @@ public class ConnectionFactory {
      */
     private String secretKey = "FastDFS1234567890";
 
+    /**
+     * 是否开启缩略图
+     */
+    private Boolean openThumbnail = false;
+    /**
+     * 缩略图透明度0-1之间
+     */
+    private Float transparency = 1f;
+    /**
+     * 水印文件位置一共9种
+     */
+    private String thumbnailPosition;
+
     public static Connection getConnection() {
+        if (ArrayUtils.isNotEmpty(trackers)) {
+            for (String tracker : trackers) {
+
+
+            }
+        } else {
+            throw new FastdfsException("tracker不能为空");
+        }
+
         return null;
     }
 
