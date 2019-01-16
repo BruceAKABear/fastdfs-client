@@ -7,19 +7,19 @@ package pro.dengyi.fastdfs.constantenum;
  * @version v1.0
  * @date 2018-12-26 15:43
  */
-public enum SystemCode {
+public enum CommonLength {
     /**
-     * 上传文件系统命令码
+     * 最大组名长度
      */
-    STORAGE_PROTO_CMD_UPLOAD_FILE(11),
+    GROUP_NAME_MAX_LENGTH(16),
     /**
-     * 删除文件命令码
+     * 包长度
      */
-    STORAGE_PROTO_CMD_DELETE_FILE(12),
+    PROTO_PACKAGE_LENGTH(8),
     /**
-     * 下载文件命令码
+     * 标准协议头长度10个字节长度
      */
-    STORAGE_PROTO_CMD_DOWNLOAD_FILE(14),
+    STANDARD_PROTOCOL_HEAD_LENGTH(10),
     /**
      * 解析tracker返回命令
      */
@@ -27,10 +27,11 @@ public enum SystemCode {
 
     private Integer value;
 
-    SystemCode(Integer value) {
+    CommonLength(Integer value) {
         this.value = value;
     }
 
     public Integer getValue() {
         return value;
-    }}
+    }
+}

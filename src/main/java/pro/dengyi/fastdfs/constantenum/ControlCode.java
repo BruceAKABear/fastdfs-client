@@ -23,7 +23,11 @@ public enum ControlCode {
     /**
      * 断点续传
      */
-    APPEND((byte) 24);
+    APPEND((byte) 24),
+    /**
+     * 获取服务器响应
+     */
+    RESPONSE((byte) 100);
 
     private Byte value;
 

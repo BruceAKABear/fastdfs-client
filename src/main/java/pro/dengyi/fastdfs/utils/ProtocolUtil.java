@@ -2,6 +2,7 @@ package pro.dengyi.fastdfs.utils;
 
 import com.google.common.primitives.Longs;
 import lombok.extern.slf4j.Slf4j;
+import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.ReceiveHeader;
 import pro.dengyi.fastdfs.exception.FastdfsException;
@@ -59,25 +60,24 @@ public class ProtocolUtil {
     public static ReceiveHeader getResponseHeader(InputStream inputStream, Byte controlCode, Long dataBodyLength) throws IOException, FastdfsException {
         byte[] responseHeaderBytes = new byte[10];
         //正确性校验
-        if (inputStream.read(responseHeaderBytes) != 10) {
+        if (inputStream.read(responseHeaderBytes) != CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getValue()) {
             throw new FastdfsException("实际读取到的报文头部长度非法，长度不为10个字节");
         }
-        if (responseHeaderBytes[0] != controlCode) {
+        if (responseHeaderBytes[8] != controlCode) {
             throw new FastdfsException("响应报文头部控制字非法，控制字和需要控制字不相同");
         }
-        if (responseHeaderBytes[0] != (byte) 0) {
+        if (responseHeaderBytes[9] != (byte) 0) {
             throw new FastdfsException("服务器响应状态字为异常");
         }
-        if (ProtocolUtil.byteArray2Long(responseHeaderBytes, 0) < 0) {
+        if (ProtocolUtil.byteArray2Long(responseHeaderBytes) < 0) {
             throw new FastdfsException("数据体中实际数据长度小于0异常");
 
-        } else {
-            if (!ProtocolUtil.byteArray2Long(responseHeaderBytes, 0).equals(dataBodyLength)) {
-                throw new FastdfsException("收取到的数据包长度不等于需要的数据包长度");
-            }
+        }
+        if (dataBodyLength >= 0 && !ProtocolUtil.byteArray2Long(responseHeaderBytes).equals(dataBodyLength)) {
+            throw new FastdfsException("收取到的数据包长度不等于需要的数据包长度");
         }
         //将数据解析封装返回
-        return new ReceiveHeader((byte) 0, ProtocolUtil.byteArray2Long(responseHeaderBytes, 0));
+        return new ReceiveHeader((byte) 0, ProtocolUtil.byteArray2Long(responseHeaderBytes));
     }
 
     /**
@@ -122,13 +122,25 @@ public class ProtocolUtil {
      * 将长度数组转换成long表示长度
      *
      * @param bs
-     * @param offset
      * @return java.lang.Long
      * @author 邓艺
      * @date 2019/1/7 13:39
      */
-    public static Long byteArray2Long(byte[] bs, Integer offset) {
-        return Longs.fromByteArray(bs);
+    public static Long byteArray2Long(byte[] bs) {
+        byte[] lengthByte = new byte[8];
+        System.arraycopy(bs, 0, lengthByte, 0, 8);
+        return Longs.fromByteArray(lengthByte);
+    }
+
+    public static Long byteArray2Long(byte[] bs, int offset) {
+        return (((long) (bs[offset] >= 0 ? bs[offset] : 256 + bs[offset])) << 56) | (((long) (bs[offset + 1] >= 0 ? bs[offset + 1] : 256 + bs[offset + 1]))
+                << 48) | (((long) (bs[offset + 2] >= 0 ? bs[offset + 2] : 256 + bs[offset + 2])) << 40) | (
+                ((long) (bs[offset + 3] >= 0 ? bs[offset + 3] : 256 + bs[offset + 3])) << 32) | (
+                ((long) (bs[offset + 4] >= 0 ? bs[offset + 4] : 256 + bs[offset + 4])) << 24) | (
+                ((long) (bs[offset + 5] >= 0 ? bs[offset + 5] : 256 + bs[offset + 5])) << 16) | (
+                ((long) (bs[offset + 6] >= 0 ? bs[offset + 6] : 256 + bs[offset + 6])) << 8) | ((long) (bs[offset + 7] >= 0 ?
+                bs[offset + 7] :
+                256 + bs[offset + 7]));
     }
 
     /**
