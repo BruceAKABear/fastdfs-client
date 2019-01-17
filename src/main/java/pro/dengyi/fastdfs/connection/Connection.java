@@ -1,11 +1,15 @@
 package pro.dengyi.fastdfs.connection;
 
 import org.apache.commons.lang3.ArrayUtils;
+import pro.dengyi.fastdfs.config.FastdfsProterties;
+import pro.dengyi.fastdfs.exception.FastdfsException;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.TreeSet;
 
 /**
  * 连接类
@@ -17,13 +21,6 @@ import java.nio.charset.StandardCharsets;
 public class Connection {
 
     /**
-     * 关闭连接
-     */
-    public void close() {
-
-    }
-
-    /**
      * 发送基础数据包方法
      *
      * @param controlCode 控制码
@@ -33,7 +30,7 @@ public class Connection {
      * @author 邓艺
      * @date 2019/1/11 10:52
      */
-    public  static void sendPackage(byte controlCode, String groupName, String remoteFileName,Socket socket) throws IOException {
+    public static void sendPackage(byte controlCode, String groupName, String remoteFileName, Socket socket) throws IOException {
         //获取远程文件名字节数组
         byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
         //产生报文头16为组名标准长度
@@ -53,5 +50,21 @@ public class Connection {
         System.arraycopy(remoteFileNameBytes, 0, wholePackage, 26, remoteFileNameBytes.length);
         //发送包
         socket.getOutputStream().write(wholePackage);
+    }
+
+    //TODO 确定重试次数
+    public Socket getTrackerConnection() {
+        FastdfsProterties fastdfsProterties = new FastdfsProterties();
+        TreeSet<String> treeSet = new TreeSet<>();
+        String[] randomTrackerIpAndPort = null;
+        InetSocketAddress inetSocketAddress = new InetSocketAddress(randomTrackerIpAndPort[0], Integer.parseInt(randomTrackerIpAndPort[1]));
+        Socket socket = new Socket();
+        try {
+            socket.connect(inetSocketAddress, 10);
+            return socket;
+        } catch (IOException e) {
+            throw new FastdfsException("连接tracker" + randomTrackerIpAndPort[0] + "时异常，请检查服务器");
+        }
+
     }
 }

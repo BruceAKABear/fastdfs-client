@@ -21,7 +21,7 @@ public class FastdfsProterties {
     /**
      * tracker集合
      */
-    private static String[] trackers;
+    private String[] trackers;
     /**
      * tracker连接超时时间，单位为毫秒
      */

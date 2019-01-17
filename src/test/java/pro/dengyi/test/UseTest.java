@@ -5,6 +5,7 @@ import pro.dengyi.fastdfs.connection.Connection;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Random;
 
 /**
  * @author 邓艺
@@ -38,5 +39,16 @@ public class UseTest {
         socket.close();
 
     }
+
+     @Test
+     public void demo3(){
+         Random r = new Random();
+         for (int i = 0; i < 30; i++) {
+             int ii = r.nextInt(5);
+             System.out.println(ii);
+         }
+
+     }
+
 
 }

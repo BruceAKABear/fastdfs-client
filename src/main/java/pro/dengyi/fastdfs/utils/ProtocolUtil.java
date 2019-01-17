@@ -121,7 +121,7 @@ public class ProtocolUtil {
     /**
      * 将长度数组转换成long表示长度
      *
-     * @param bs
+     * @param bs 协议头字节数组
      * @return java.lang.Long
      * @author 邓艺
      * @date 2019/1/7 13:39

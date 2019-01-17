@@ -9,6 +9,7 @@ import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -70,6 +71,25 @@ public class Tracker {
         }
 
         return storagerEntities;
+    }
+
+    /**
+     * 由tracker获取所有的storage
+     *
+     * @param socket socket连接
+     * @param groupName 组名
+     * @return List
+     * @author 邓艺
+     * @date 2019/1/16 21:17
+     */
+    public List<String> getAllStorages(Socket socket, String groupName) {
+        //如果不能为空，则查询组下的所有存储服务器
+        if (StringUtils.isNotBlank(groupName)) {
+
+        } else {
+
+        }
+        return null;
     }
 
 }

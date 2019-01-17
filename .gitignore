@@ -95,3 +95,7 @@ buildNumber.properties
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.jar
 
+.idea/encodings.xml
+.idea/fastdfs-client.iml
+.idea/misc.xml
+.idea/modules.xml
