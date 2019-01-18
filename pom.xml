@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>pro.dengyi</groupId>
     <artifactId>fastdfs-client</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <!--添加依赖-->
     <dependencies>
         <!--简化重复代码-->
@@ -69,13 +69,6 @@
             <version>27.0.1-jre</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>yihui-maven-repo</id>
-            <url>https://raw.githubusercontent.com/BruceAKABear/maven-repository/</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
