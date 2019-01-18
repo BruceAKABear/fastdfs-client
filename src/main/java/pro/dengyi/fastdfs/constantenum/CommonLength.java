@@ -23,15 +23,16 @@ public enum CommonLength {
     /**
      * 解析tracker返回命令
      */
-    TRACKER_RESPONSE(100);
+    TRACKER_RESPONSE(100),
+    STORAGE_ID_LENGTH(16);
 
-    private Integer value;
+    private Integer length;
 
-    CommonLength(Integer value) {
-        this.value = value;
+    CommonLength(Integer length) {
+        this.length = length;
     }
 
-    public Integer getValue() {
-        return value;
+    public Integer getLength() {
+        return length;
     }
 }

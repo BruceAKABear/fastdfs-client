@@ -33,7 +33,7 @@ public enum ControlCode {
      */
     TRACKER_LIST_GROUP((byte) 91),
     /**
-     * 查询所有的存储服务器
+     * tracker列举出storage控制字
      */
     TRACKER_LIST_STORAGE((byte) 92),
     QUERY_STORAGE_WITHOUT_GROUP_ALL((byte) 106),

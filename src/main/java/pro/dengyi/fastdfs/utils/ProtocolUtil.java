@@ -1,6 +1,7 @@
 package pro.dengyi.fastdfs.utils;
 
 import com.google.common.primitives.Longs;
+import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.entity.ReceiveData;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 /**
  * 通讯协议工具类
@@ -27,7 +29,7 @@ public class ProtocolUtil {
      * 标准报文头部长度为10个字节，前8个字节表示数据包长度,第8个字节表示控制字，最后一个字节表示状态必须为0
      *
      * @param controlCode 系统命令字
-     * @param packagelength 数据包长度
+     * @param packagelength 数据包长度字节数
      * @param status 状态编码
      * @return byte[] byte数组
      * @author 邓艺
@@ -60,7 +62,7 @@ public class ProtocolUtil {
     public static ReceiveHeader getResponseHeader(InputStream inputStream, Byte controlCode, Long dataBodyLength) throws IOException, FastdfsException {
         byte[] responseHeaderBytes = new byte[10];
         //正确性校验
-        if (inputStream.read(responseHeaderBytes) != CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getValue()) {
+        if (inputStream.read(responseHeaderBytes) != CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getLength()) {
             throw new FastdfsException("实际读取到的报文头部长度非法，长度不为10个字节");
         }
         if (responseHeaderBytes[8] != controlCode) {
@@ -153,7 +155,6 @@ public class ProtocolUtil {
      * @date 2019/1/7 13:41
      */
     public static Integer byteArray2Int(byte[] bs, Integer offset) {
-
         return (((int) (bs[offset] >= 0 ? bs[offset] : 256 + bs[offset])) << 24) | (((int) (bs[offset + 1] >= 0 ? bs[offset + 1] : 256 + bs[offset + 1])) << 16)
                 | (((int) (bs[offset + 2] >= 0 ? bs[offset + 2] : 256 + bs[offset + 2])) << 8) | ((int) (bs[offset + 3] >= 0 ?
                 bs[offset + 3] :
@@ -185,6 +186,20 @@ public class ProtocolUtil {
         }
 
         return sbResult.toString();
+    }
+
+    /**
+     * 将long型数据转换为时间
+     *
+     * @param offSet 偏移量
+     * @return Date
+     * @author 邓艺
+     * @date 2019/1/18 10:24
+     */
+    public static Date byteArray2Date(@NotNull byte[] bytes, Integer offSet) {
+        byte[] timeArray = new byte[8];
+        System.arraycopy(bytes, offSet, timeArray, 0, 8);
+        return new Date();
     }
 
     /**

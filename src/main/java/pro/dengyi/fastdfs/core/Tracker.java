@@ -2,8 +2,11 @@ package pro.dengyi.fastdfs.core;
 
 import com.sun.istack.internal.NotNull;
 import org.apache.commons.lang3.StringUtils;
+import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
+import pro.dengyi.fastdfs.entity.StorageInfo;
 import pro.dengyi.fastdfs.entity.StoragerEntity;
+import pro.dengyi.fastdfs.exception.FastdfsException;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 
 import java.io.IOException;
@@ -89,6 +92,38 @@ public class Tracker {
         } else {
 
         }
+        return null;
+    }
+
+    /**
+     * 获取组下所有storage的信息
+     *
+     * @param groupName 组名
+     * @param storageIpAddr 存储服务器的IP地址
+     * @return List  StorageInfo集合
+     * @author 邓艺
+     * @date 2019/1/18 12:38
+     */
+    public List<StorageInfo> getAllStorageInfo(@NotNull String groupName, String storageIpAddr) throws FastdfsException {
+        if (StringUtils.isBlank(groupName)) {
+            throw new FastdfsException("获取storage信息时，group名不能为空");
+        }
+
+        return null;
+    }
+
+    //用于上传
+    public BasicStorageInfo getUploadStorage() {
+        return null;
+    }
+
+    //用于下载
+    public BasicStorageInfo getDownloadStorage(String groupName, String fid) {
+        return null;
+    }
+
+    //用于删除或者上传metadata
+    public BasicStorageInfo getUpdateStorage() {
         return null;
     }
 

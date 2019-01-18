@@ -46,7 +46,7 @@ public class FastdfsProterties {
     /**
      * 缩略图透明度0-1之间
      */
-    private Float transparency = 1f;
+    private Float transparency = 0f;
     /**
      * 水印文件位置一共9种
      */
