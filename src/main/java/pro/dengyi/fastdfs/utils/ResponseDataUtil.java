@@ -28,8 +28,8 @@ public class ResponseDataUtil {
     public static List<StorageGroupInfo> getAllStorageGroupInfo(byte[] bytes) throws FastdfsException {
         //所有数据的长度
         int allBytesLength = bytes.length;
-        //获取一整个group信息的长度为97个字节
-        int singleLength = 97;
+        //获取一整个group信息的长度为105个字节
+        int singleLength = 105;
         if (allBytesLength % singleLength != 0) {
             throw new FastdfsException("数据长度非法");
         }
@@ -42,7 +42,35 @@ public class ResponseDataUtil {
             StorageGroupInfo storageGroupInfo = putDataInToStorageGroupInfo(bytes, startOffset);
             list.add(storageGroupInfo);
             startOffset += singleLength;
+        }
+        return list;
+    }
 
+    /**
+     * 获取所有存储服务器信息集合
+     *
+     * @param bytes
+     * @return List
+     * @author 邓艺
+     * @date 2019/1/18 21:32
+     */
+    public static List<StorageInfo> getAllStorageInfo(byte[] bytes) throws FastdfsException {
+        //所有数据的长度
+        int allBytesLength = bytes.length;
+        //获取一整个group信息的长度为105个字节
+        int singleLength = 612;
+        if (allBytesLength % singleLength != 0) {
+            throw new FastdfsException("数据长度非法");
+        }
+        List<StorageInfo> list = new ArrayList<>();
+        //组的个数
+        int groupNumber = allBytesLength / singleLength;
+        //起始offset;
+        int startOffset = 0;
+        for (int i = 0; i < groupNumber; i++) {
+            StorageInfo storageInfo = putDataInToStorageInfo(bytes, startOffset);
+            list.add(storageInfo);
+            startOffset += singleLength;
         }
         return list;
     }
@@ -56,7 +84,7 @@ public class ResponseDataUtil {
      * @author 邓艺
      * @date 2019/1/18 9:47
      */
-    public static StorageGroupInfo putDataInToStorageGroupInfo(byte[] bytes, Integer startOffSet) {
+    private static StorageGroupInfo putDataInToStorageGroupInfo(byte[] bytes, Integer startOffSet) {
         int innerOffSet = 0;
         StorageGroupInfo storageGroupInfo = new StorageGroupInfo();
         //组名,为什么读取17个字节，应该是有一位作为状态字节但是没有使用

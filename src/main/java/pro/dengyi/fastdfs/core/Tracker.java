@@ -2,19 +2,17 @@ package pro.dengyi.fastdfs.core;
 
 import com.sun.istack.internal.NotNull;
 import org.apache.commons.lang3.StringUtils;
-import pro.dengyi.fastdfs.entity.BasicStorageInfo;
-import pro.dengyi.fastdfs.entity.ReceiveData;
-import pro.dengyi.fastdfs.entity.StorageInfo;
-import pro.dengyi.fastdfs.entity.StoragerEntity;
+import pro.dengyi.fastdfs.constantenum.ControlCode;
+import pro.dengyi.fastdfs.constantenum.SystemStatus;
+import pro.dengyi.fastdfs.entity.*;
 import pro.dengyi.fastdfs.exception.FastdfsException;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
+import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * tracker核心类
@@ -26,54 +24,43 @@ import java.util.TreeSet;
 public class Tracker {
 
     /**
-     * 获取所有存储服务器ip和端口
+     * 获取所有存储组的信息
      *
-     * @param socket tracker的socket
+     * @param
+     * @return List 存储组信息集合
+     * @author 邓艺
+     * @date 2019/1/18 20:50
+     */
+    public static List<StorageGroupInfo> getAllStorageGroupInfo() throws IOException {
+        byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_GROUPINFO.getValue(), 0L, SystemStatus.SUCCESS.getValue());
+        Socket socket = new Socket();
+        socket.getOutputStream().write(protoHeader);
+        //-1 代表读取所有数据
+        ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
+        return ResponseDataUtil.getAllStorageGroupInfo(responseData.getBody());
+    }
+
+    /**
+     * 查询所有storage的信息
+     *
      * @param groupName 组名 可以为空
      * @return pro.dengyi.fastdfs.core.Storage[]
      * @author 邓艺
      * @date 2019/1/15 14:43
      */
-    public static Set<StoragerEntity> getStorages(@NotNull Socket socket, String groupName) throws IOException {
-        //定义控制字
-        byte controlCode;
-        Long writeLength = null;
-        //groupName为空,查询出所有的存储服务器
-        if (StringUtils.isNotBlank(groupName)) {
-            controlCode = (byte) 107;
-            writeLength = 16L;
-        } else {
-            controlCode = (byte) 106;
-            writeLength = 0L;
-        }
-        //获取报文头部
-        byte[] protoHeader = ProtocolUtil.getProtoHeader(controlCode, writeLength, (byte) 0);
-        socket.getOutputStream().write(protoHeader);
-        //如果组名不为空，将组名写出去
-        if (StringUtils.isNotBlank(groupName)) {
-            byte[] groupNameBytes = new byte[16];
-            byte[] originalBytes = groupName.getBytes(StandardCharsets.UTF_8);
-            if (originalBytes.length <= 16) {
-                System.arraycopy(originalBytes, 0, groupNameBytes, 0, originalBytes.length);
-            } else {
-                System.arraycopy(originalBytes, 0, groupNameBytes, 0, 16);
-            }
-            //将组名写出
-            socket.getOutputStream().write(groupNameBytes);
-        }
-        //3.接受服务器响应的数据,控制字为100
+    public static List<StorageInfo> getAllStorageInfo(@NotNull String groupName) throws IOException {
+        Socket socket = new Socket();
+        byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), 16L, SystemStatus.SUCCESS.getValue());
+        byte[] wholePackeg = new byte[26];
+        byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(protoHeader, 0, wholePackeg, 0, 10);
+        byte[] StandardgroupNameBytes = new byte[16];
+        System.arraycopy(groupNameBytes, 0, StandardgroupNameBytes, 0, groupNameBytes.length);
+        System.arraycopy(StandardgroupNameBytes, 0, wholePackeg, 10, 16);
+        socket.getOutputStream().write(wholePackeg);
+        //接受响应数据
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
-        //4.服务器状态校验
-
-        //5.获取存储服务器集合
-        Set<StoragerEntity> storagerEntities = new TreeSet<>();
-        //存储服务器数量
-        int storagerNumber = 10;
-        for (int i = 0; i < storagerNumber; i++) {
-            storagerEntities.add(new StoragerEntity("192.168.0.188", 23000, (byte) 1));
-        }
-
-        return storagerEntities;
+        return ResponseDataUtil.getAllStorageInfo(responseData.getBody());
     }
 
     /**

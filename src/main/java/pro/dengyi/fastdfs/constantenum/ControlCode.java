@@ -31,11 +31,11 @@ public enum ControlCode {
     /**
      * 查询所有的存储服务器组
      */
-    TRACKER_LIST_GROUP((byte) 91),
+    TRACKER_GET_ALL_GROUPINFO((byte) 91),
     /**
      * tracker列举出storage控制字
      */
-    TRACKER_LIST_STORAGE((byte) 92),
+    TRACKER_GET_ALL_STORAGEINFO((byte) 92),
     QUERY_STORAGE_WITHOUT_GROUP_ALL((byte) 106),
     QUERY_STORE_WITH_GROUP_ALL((byte) 107);
 

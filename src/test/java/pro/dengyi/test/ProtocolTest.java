@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * 协议测试类
@@ -28,15 +29,14 @@ public class ProtocolTest {
      */
     @Test
     public void demo1() throws IOException {
-        Socket socket = new Socket("61.153.187.80", 22122);
+        Socket socket = new Socket("192.168.199.3", 22122);
         OutputStream outputStream = socket.getOutputStream();
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 91, 0L, SystemStatus.SUCCESS.getValue());
         outputStream.write(protoHeader);
         //接受响应
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
-        String string = new String(responseData.getBody(), 0, 16);
-        StorageGroupInfo storageGroupInfo = ResponseDataUtil.putDataInToStorageGroupInfo(responseData.getBody(), 0);
-        System.out.println(responseData.getBody());
+        List<StorageGroupInfo> allStorageGroupInfo = ResponseDataUtil.getAllStorageGroupInfo(responseData.getBody());
+        System.out.println("-----");
     }
 
     /**
@@ -46,11 +46,11 @@ public class ProtocolTest {
      */
     @Test
     public void demo2() throws IOException {
-        Socket socket = new Socket("61.153.187.80", 22122);
+        Socket socket = new Socket("192.168.199.3", 22122);
         OutputStream outputStream = socket.getOutputStream();
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 92, 16L, SystemStatus.SUCCESS.getValue());
         byte[] wholePackeg = new byte[26];
-        String groupName = "group1";
+        String groupName = "group2";
         byte[] bytes = groupName.getBytes(StandardCharsets.UTF_8);
 
         System.arraycopy(protoHeader, 0, wholePackeg, 0, 10);
@@ -60,8 +60,8 @@ public class ProtocolTest {
         outputStream.write(wholePackeg);
         //接受响应数据
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
-        String string = new String(responseData.getBody(), 0, 16);
-        StorageInfo storageInfo = ResponseDataUtil.putDataInToStorageInfo(responseData.getBody(), 0);
+        List<StorageInfo> allStorageInfo = ResponseDataUtil.getAllStorageInfo(responseData.getBody());
+
         socket.close();
         System.out.println(responseData.getBody());
     }
