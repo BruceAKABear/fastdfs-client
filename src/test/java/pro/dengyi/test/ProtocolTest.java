@@ -1,6 +1,9 @@
 package pro.dengyi.test;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import pro.dengyi.fastdfs.constantenum.CommonLength;
+import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.constantenum.SystemStatus;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
@@ -47,23 +50,31 @@ public class ProtocolTest {
     @Test
     public void demo2() throws IOException {
         Socket socket = new Socket("192.168.199.3", 22122);
-        OutputStream outputStream = socket.getOutputStream();
-        byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 92, 16L, SystemStatus.SUCCESS.getValue());
-        byte[] wholePackeg = new byte[26];
-        String groupName = "group2";
-        byte[] bytes = groupName.getBytes(StandardCharsets.UTF_8);
+        String groupName = "group1";
+        String storageIpAddr = "192.168.199.4";
+        byte[] protoHeader = null;
+        byte[] wholeMessage = null;
+        byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];
+        byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
+        if (StringUtils.isNotBlank(storageIpAddr)) {
+            byte[] storageIpAddrBytes = storageIpAddr.getBytes(StandardCharsets.UTF_8);
+            protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), (long)16+storageIpAddrBytes.length, SystemStatus.SUCCESS.getValue());
+            wholeMessage = new byte[42];
+            System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+            System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
+            System.arraycopy(storageIpAddrBytes, 0, wholeMessage, 26, storageIpAddrBytes.length);
 
-        System.arraycopy(protoHeader, 0, wholePackeg, 0, 10);
-        byte[] bytes1 = new byte[16];
-        System.arraycopy(bytes, 0, bytes1, 0, bytes.length);
-        System.arraycopy(bytes1, 0, wholePackeg, 10, 16);
-        outputStream.write(wholePackeg);
-        //接受响应数据
-        ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
+        } else {
+            protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), 16L, SystemStatus.SUCCESS.getValue());
+            wholeMessage = new byte[26];
+            System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+            System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
+        }
+        socket.getOutputStream().write(wholeMessage);
+        ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), ControlCode.TRACKER_RESPONSE.getValue(), (long) -1);
         List<StorageInfo> allStorageInfo = ResponseDataUtil.getAllStorageInfo(responseData.getBody());
-
-        socket.close();
-        System.out.println(responseData.getBody());
+        System.out.println(allStorageInfo);
     }
 
     /**

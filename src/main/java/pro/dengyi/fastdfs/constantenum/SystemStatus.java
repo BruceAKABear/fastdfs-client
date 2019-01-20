@@ -20,5 +20,4 @@ public enum SystemStatus {
 
     public byte getValue() {
         return value;
-    }
-}
+    }}

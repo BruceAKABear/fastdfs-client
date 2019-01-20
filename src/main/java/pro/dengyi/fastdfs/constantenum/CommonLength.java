@@ -24,7 +24,15 @@ public enum CommonLength {
      * 解析tracker返回命令
      */
     TRACKER_RESPONSE(100),
-    STORAGE_ID_LENGTH(16);
+    STORAGE_ID_LENGTH(16),
+    /**
+     * 最大ip长度16
+     */
+    MAX_IP_LENGTH(15),
+    /**
+     * 组大组名长度16
+     */
+    MAX_GROUPNAME_LENGTH(16);
 
     private Integer length;
 
@@ -34,5 +42,4 @@ public enum CommonLength {
 
     public Integer getLength() {
         return length;
-    }
-}
+    }}

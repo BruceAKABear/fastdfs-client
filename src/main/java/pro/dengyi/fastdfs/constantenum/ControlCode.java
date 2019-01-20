@@ -27,7 +27,7 @@ public enum ControlCode {
     /**
      * 获取服务器响应
      */
-    RESPONSE((byte) 100),
+    TRACKER_RESPONSE((byte) 100),
     /**
      * 查询所有的存储服务器组
      */

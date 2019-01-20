@@ -16,7 +16,7 @@ public class StorageGroupInfo {
      */
     private String groupName;
     /**
-     * 组最大容量
+     * 组所有容量
      */
     private Long totalMB;
     /**
