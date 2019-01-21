@@ -10,6 +10,7 @@ import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
 import pro.dengyi.fastdfs.pool.TrackerPool;
+import pro.dengyi.fastdfs.utils.FileNameUtil;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 
@@ -192,18 +193,40 @@ public class ProtocolTest {
     @Test
     public void demo7() throws IOException {
         //1.获取上传storage
-        Socket trackerSocket = new Socket("61.153.187.80", 22122);
+        Socket trackerSocket = new Socket("192.168.199.2", 22122);
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 101, (long) 0, SystemStatus.SUCCESS.getValue());
         trackerSocket.getOutputStream().write(protoHeader);
         ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) 40);
         BasicStorageInfo basicStorageInfo = ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
         //上传
         byte[] bytes = new byte[294 * 1024];
-        File file = new File("C:\\Users\\dengyi\\Desktop\\112.jpg");
+        File file = new File("C:\\Users\\dengyi\\Desktop\\1111.jpg");
         FileInputStream fileInputStream = new FileInputStream(file);
         fileInputStream.read(bytes);
         Socket storageSocket = new Socket(basicStorageInfo.getIp(), Math.toIntExact(basicStorageInfo.getPort()));
-        byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 294 * 1024, SystemStatus.SUCCESS.getValue());
+        byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 294 * 1024 + 15, SystemStatus.SUCCESS.getValue());
+
+        //组装报文内容
+        byte[] wholePackage = new byte[25];
+        System.arraycopy(protoHeader1, 0, wholePackage, 0, 10);
+//ti
+        byte[] bytes2 = ProtocolUtil.long2ByteArray((long) 294 * 1024);
+        byte[] dataBody = new byte[9];
+        dataBody[0] = 0;
+        System.arraycopy(bytes2, 0, dataBody, 1, 8);
+        System.arraycopy(dataBody, 0, wholePackage, 10, 9);
+        String extNameWithOutDot = FileNameUtil.getExtNameWithDot("1111.jpg").substring(1);
+        byte[] standardExtNameByteArray = new byte[6];
+        byte[] bytes3 = extNameWithOutDot.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(bytes3, 0, standardExtNameByteArray, 0, bytes3.length);
+        //
+        System.arraycopy(standardExtNameByteArray, 0, wholePackage, 19, 6);
+        storageSocket.getOutputStream().write(wholePackage);
+        storageSocket.getOutputStream().write(bytes);
+        ReceiveData responseData1 = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
+        //49 6+43
+        String groupName = new String(responseData1.getBody(), 0, 16).trim();
+        String remoteFilename = new String(responseData1.getBody(), 16, responseData1.getBody().length - 16);
 
         System.out.println("11111");
 
