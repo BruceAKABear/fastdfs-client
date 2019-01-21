@@ -3,6 +3,8 @@ package pro.dengyi.fastdfs.service;
 import pro.dengyi.fastdfs.core.Tracker;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 
+import java.util.List;
+
 /**
  * fastdfs操作模板类
  *
@@ -12,7 +14,7 @@ import pro.dengyi.fastdfs.entity.BasicStorageInfo;
  */
 public class FastdfsTemplate extends Tracker {
 
-    public String uploadFile() {
+    public String uploadFile(byte[] fileBytes, String groupName, String masterFileName, String fileNameSuffix, List<Object> metadata) {
         BasicStorageInfo uploadStorage = this.getUploadStorage();
         return null;
     }

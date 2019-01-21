@@ -52,4 +52,9 @@ public class FastdfsProterties {
      */
     private String thumbnailPosition;
 
+    /**
+     * tracker心跳检测时间频率，默认30s一次，如果tracker服务器性能越强时间可以设置的越大
+     */
+    private Integer trackerHeartBeatCheckTime = 30;
+
 }

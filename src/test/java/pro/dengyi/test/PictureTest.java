@@ -123,9 +123,6 @@ public class PictureTest {
         for (Object item : metadata.getItems()) {
             System.out.println(item);
         }
-        //System.out.println(metadata);
-        //        Thumbnails.of(file).height(200).toFile(new File("c://解密文件//11.jpg"));
-
     }
 
     @Test

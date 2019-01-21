@@ -9,9 +9,12 @@ import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
+import pro.dengyi.fastdfs.pool.TrackerPool;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -59,7 +62,8 @@ public class ProtocolTest {
         System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
         if (StringUtils.isNotBlank(storageIpAddr)) {
             byte[] storageIpAddrBytes = storageIpAddr.getBytes(StandardCharsets.UTF_8);
-            protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), (long)16+storageIpAddrBytes.length, SystemStatus.SUCCESS.getValue());
+            protoHeader = ProtocolUtil
+                    .getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), (long) 16 + storageIpAddrBytes.length, SystemStatus.SUCCESS.getValue());
             wholeMessage = new byte[42];
             System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
             System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
@@ -73,6 +77,7 @@ public class ProtocolTest {
         }
         socket.getOutputStream().write(wholeMessage);
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), ControlCode.TRACKER_RESPONSE.getValue(), (long) -1);
+        socket.close();
         List<StorageInfo> allStorageInfo = ResponseDataUtil.getAllStorageInfo(responseData.getBody());
         System.out.println(allStorageInfo);
     }
@@ -126,6 +131,7 @@ public class ProtocolTest {
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 101, 0L, SystemStatus.SUCCESS.getValue());
         socket.getOutputStream().write(protoHeader);
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) 40);
+        socket.close();
         //返回的数据是 组名+ip+端口 =16+15+8=39
         BasicStorageInfo basicStorageInfo = ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, true);
     }
@@ -163,7 +169,7 @@ public class ProtocolTest {
         socket.getOutputStream().write(whole);
         ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), (byte) 100, (long) -1);
         BasicStorageInfo basicStorageInfo = ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
-
+        socket.close();
         //TODO 真正删除开始
         Socket storageSocket = new Socket(basicStorageInfo.getIp(), Math.toIntExact(basicStorageInfo.getPort()));
         byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 12, (long) (16 + bytes.length), SystemStatus.SUCCESS.getValue());
@@ -176,6 +182,36 @@ public class ProtocolTest {
         System.arraycopy(bytes, 0, whole1, 26, bytes.length);
         storageSocket.getOutputStream().write(whole1);
         ReceiveData responseData1 = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) 0);
+        storageSocket.close();
         System.out.println(responseData1.getErrorNo());
+    }
+
+    /**
+     * 测试上传
+     */
+    @Test
+    public void demo7() throws IOException {
+        //1.获取上传storage
+        Socket trackerSocket = new Socket("61.153.187.80", 22122);
+        byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 101, (long) 0, SystemStatus.SUCCESS.getValue());
+        trackerSocket.getOutputStream().write(protoHeader);
+        ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) 40);
+        BasicStorageInfo basicStorageInfo = ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
+        //上传
+        byte[] bytes = new byte[294 * 1024];
+        File file = new File("C:\\Users\\dengyi\\Desktop\\112.jpg");
+        FileInputStream fileInputStream = new FileInputStream(file);
+        fileInputStream.read(bytes);
+        Socket storageSocket = new Socket(basicStorageInfo.getIp(), Math.toIntExact(basicStorageInfo.getPort()));
+        byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 294 * 1024, SystemStatus.SUCCESS.getValue());
+
+        System.out.println("11111");
+
+    }
+
+    @Test
+    public void demo8() {
+        TrackerPool trackerPool = new TrackerPool();
+
     }
 }
