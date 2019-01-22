@@ -8,6 +8,11 @@ package pro.dengyi.fastdfs.constantenum;
  * @date 2018-12-26 15:43
  */
 public enum CommonLength {
+
+    /**
+     * 标准协议头长度10个字节长度
+     */
+    STANDARD_PROTOCOL_HEAD_LENGTH(10),
     /**
      * 最大组名长度
      */
@@ -16,10 +21,7 @@ public enum CommonLength {
      * 包长度
      */
     PROTO_PACKAGE_LENGTH(8),
-    /**
-     * 标准协议头长度10个字节长度
-     */
-    STANDARD_PROTOCOL_HEAD_LENGTH(10),
+
     /**
      * 解析tracker返回命令
      */
@@ -42,4 +44,5 @@ public enum CommonLength {
 
     public Integer getLength() {
         return length;
-    }}
+    }
+}

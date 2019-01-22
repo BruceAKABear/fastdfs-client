@@ -1,7 +1,7 @@
 package pro.dengyi.fastdfs.connection;
 
 import lombok.Data;
-import pro.dengyi.fastdfs.config.FastdfsProterties;
+import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 
 /**
  * 连接工厂
@@ -15,15 +15,15 @@ public class ConnectionFactory {
     /**
      * 注入fastdfs配置对象
      */
-    private FastdfsProterties fastdfsProterties;
+    private FastdfsConfiguration fastdfsConfiguration;
 
-    private static ConnectionFactory ourInstance = new ConnectionFactory();
+    public ConnectionFactory(FastdfsConfiguration fastdfsConfiguration) {
+        this.fastdfsConfiguration = fastdfsConfiguration;
+    }
 
     public static Connection getConnection() {
 
         return null;
     }
 
-    private ConnectionFactory() {
-    }
 }

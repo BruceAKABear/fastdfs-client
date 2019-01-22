@@ -25,20 +25,8 @@ public class IpAddressUtil {
         if (StringUtils.isNotBlank(singleAddress)) {
             return singleAddress.split(":");
         } else {
-            throw new FastdfsException("由配置生成tracker的ip和端口异常");
+            throw new FastdfsException("tracker配置的的ip和端口异常");
         }
-    }
-
-    /**
-     * 从文件分享url中提取出fid
-     *
-     * @param shareUrl 分享url
-     * @return java.lang.String
-     * @author 邓艺
-     * @date 2019/1/10 13:24
-     */
-    public static String getFidFromShareUrl(String shareUrl) {
-        return shareUrl.substring(shareUrl.indexOf("/", 8) + 1);
     }
 
 }

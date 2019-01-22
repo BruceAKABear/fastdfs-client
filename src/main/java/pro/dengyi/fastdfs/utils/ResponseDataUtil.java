@@ -4,6 +4,7 @@ import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
+import pro.dengyi.fastdfs.entity.UploadedFileInfo;
 import pro.dengyi.fastdfs.exception.FastdfsException;
 
 import java.util.ArrayList;
@@ -273,6 +274,22 @@ public class ResponseDataUtil {
             basicStorageInfo.setStorePath(bytes[offSet + 31]);
         }
         return basicStorageInfo;
+    }
+
+    /**
+     * 将返回的数据封装进文件上传信息封装实体
+     *
+     * @param bytes
+     * @param offSet
+     * @return UploadedFileInfo
+     * @author 邓艺
+     * @date 2019/1/22 9:49
+     */
+    public static UploadedFileInfo putDataInToUploadedFileInfo(byte[] bytes, Integer offSet) {
+        UploadedFileInfo uploadedFileInfo = new UploadedFileInfo();
+        uploadedFileInfo.setGroupName(new String(bytes, 0, CommonLength.GROUP_NAME_MAX_LENGTH.getLength()).trim());
+        uploadedFileInfo.setRemoteFileName(new String(bytes, 16, bytes.length - 16).trim());
+        return uploadedFileInfo;
     }
 
 }

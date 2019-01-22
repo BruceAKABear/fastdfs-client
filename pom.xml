@@ -44,6 +44,12 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.8.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.2</version>
+        </dependency>
+
         <!--输入输出流之间的转换-->
         <dependency>
             <groupId>org.ostermiller</groupId>

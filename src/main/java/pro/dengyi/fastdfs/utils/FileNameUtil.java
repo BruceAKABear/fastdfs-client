@@ -65,18 +65,22 @@ public class FileNameUtil {
     }
 
     /**
-     * 根据fid获取组名和远程文件名
+     * 从文件url中提取出组名和远程文件名
      *
-     * @param fid 文件id
-     * @return java.lang.String[]
+     * @param fileUrl 文件url
+     * @return java.lang.String[] [0]为组名，[1]为远程文件名
      * @author 邓艺
-     * @date 2019/1/10 14:34
+     * @date 2019/1/10 13:24
      */
-    public static String[] getGroupNameAndRemoteFileNameFromFid(@NotNull String fid) {
-        int i = fid.indexOf("/");
-        String groupName = fid.substring(0, i);
-        String remoteFileName = fid.substring(i + 1);
-        return new String[]{groupName, remoteFileName};
+    public static String[] getGroupNameAndRemoteFileName(@NotNull String fileUrl) throws FastdfsException {
+        if (StringUtils.isBlank(fileUrl)) {
+            throw new FastdfsException("文件url不能为空");
+        }
+        String[] groupNameAndFid = new String[2];
+        String fid = fileUrl.substring(fileUrl.indexOf("/", 8) + 1);
+        groupNameAndFid[0] = fid.substring(0, fid.indexOf("/"));
+        groupNameAndFid[1] = fid.substring(fid.indexOf("/") + 1);
+        return groupNameAndFid;
     }
 
 }

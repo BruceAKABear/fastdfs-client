@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
  * @date 2018-12-25 15:41
  */
 @Data
-public class FastdfsProterties {
+public class FastdfsConfiguration {
     /**
      * 网络连接超时时间,单位为毫秒
      */

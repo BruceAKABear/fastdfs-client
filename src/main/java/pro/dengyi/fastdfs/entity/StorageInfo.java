@@ -46,7 +46,8 @@ public class StorageInfo {
      * 开始时间
      */
     private Date upTime;
-    private Long storePathCount;  //store base path count of each storage server
+    //store base path count of each storage server
+    private Long storePathCount;
     private Long subdirCountPerPath;
     /**
      * 存储服务器端口

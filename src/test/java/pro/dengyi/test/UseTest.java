@@ -1,7 +1,9 @@
 package pro.dengyi.test;
 
 import org.junit.Test;
+import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.connection.Connection;
+import pro.dengyi.fastdfs.connection.ConnectionFactory;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -19,7 +21,11 @@ public class UseTest {
     @Test
     public void demo1() {
         //1. 设置参数
+        FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+        fastdfsConfiguration.setTrackers(new String[]{"111", "222"});
         //2. 利用连接工厂获取连接
+        ConnectionFactory connectionFactory = new ConnectionFactory(fastdfsConfiguration);
+
         //3. 进行crud操作
         //4. 关闭资源
 
@@ -39,10 +45,9 @@ public class UseTest {
 
     }
 
-     @Test
-     public void demo3(){
+    @Test
+    public void demo3() {
 
-     }
-
+    }
 
 }

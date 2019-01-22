@@ -13,30 +13,43 @@ public enum ControlCode {
      */
     UPLOAD((byte) 11),
     /**
+     * tracker查询上传storage
+     */
+    TRACKER_QUERY_UPLOAD_STORAGE((byte) 101),
+    TRACKER_QUERY_UPDATE_STORAGE((byte) 103),
+
+    /**
      * 删除文件命令码
      */
     DELETE((byte) 12),
+
     /**
      * 下载文件命令码
      */
     DOWNLOAD((byte) 14),
+
     /**
      * 断点续传
      */
     APPEND((byte) 24),
+
     /**
      * 获取服务器响应
      */
     TRACKER_RESPONSE((byte) 100),
+
     /**
      * 查询所有的存储服务器组
      */
     TRACKER_GET_ALL_GROUPINFO((byte) 91),
+
     /**
      * tracker列举出storage控制字
      */
     TRACKER_GET_ALL_STORAGEINFO((byte) 92),
+
     QUERY_STORAGE_WITHOUT_GROUP_ALL((byte) 106),
+
     QUERY_STORE_WITH_GROUP_ALL((byte) 107);
 
     private Byte value;
@@ -47,4 +60,5 @@ public enum ControlCode {
 
     public Byte getValue() {
         return value;
-    }}
+    }
+}

@@ -9,7 +9,6 @@ import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
-import pro.dengyi.fastdfs.pool.TrackerPool;
 import pro.dengyi.fastdfs.utils.FileNameUtil;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import pro.dengyi.fastdfs.utils.ResponseDataUtil;
@@ -192,8 +191,13 @@ public class ProtocolTest {
      */
     @Test
     public void demo7() throws IOException {
+        /**
+         * 几个问题：
+         * 1.将文件上传至指定group是否有必要，如果将文件上传至指定group破坏了负载均衡如果是集群必然会导致有的group中不能有group
+         * 2.metadata是否有上传的必要，就接触的以及可能会接触的，metadata不存在用途
+         */
         //1.获取上传storage
-        Socket trackerSocket = new Socket("192.168.199.2", 22122);
+        Socket trackerSocket = new Socket("192.168.0.178", 22122);
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 101, (long) 0, SystemStatus.SUCCESS.getValue());
         trackerSocket.getOutputStream().write(protoHeader);
         ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) 40);
@@ -209,7 +213,7 @@ public class ProtocolTest {
         //组装报文内容
         byte[] wholePackage = new byte[25];
         System.arraycopy(protoHeader1, 0, wholePackage, 0, 10);
-//ti
+        //ti
         byte[] bytes2 = ProtocolUtil.long2ByteArray((long) 294 * 1024);
         byte[] dataBody = new byte[9];
         dataBody[0] = 0;
@@ -232,9 +236,4 @@ public class ProtocolTest {
 
     }
 
-    @Test
-    public void demo8() {
-        TrackerPool trackerPool = new TrackerPool();
-
-    }
 }

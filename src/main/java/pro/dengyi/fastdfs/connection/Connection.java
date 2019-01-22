@@ -1,6 +1,6 @@
 package pro.dengyi.fastdfs.connection;
 
-import pro.dengyi.fastdfs.config.FastdfsProterties;
+import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.exception.FastdfsException;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class Connection {
 
     //TODO 确定重试次数
     public Socket getTrackerConnection() {
-        FastdfsProterties fastdfsProterties = new FastdfsProterties();
+        FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
         TreeSet<String> treeSet = new TreeSet<>();
         String[] randomTrackerIpAndPort = null;
         InetSocketAddress inetSocketAddress = new InetSocketAddress(randomTrackerIpAndPort[0], Integer.parseInt(randomTrackerIpAndPort[1]));
