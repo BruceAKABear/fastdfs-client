@@ -80,7 +80,6 @@ public class FastdfsCore {
      * @date 2019/1/22 13:40
      */
     public BasicStorageInfo getUpdateStorage(String groupName, String remoteFileName) {
-        Socket trackerSocket = new Socket();
         //不判断groupname的长度，因为是文件服务器返回的
         //1. 封装组名byte进标准16位长度数组
         byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];

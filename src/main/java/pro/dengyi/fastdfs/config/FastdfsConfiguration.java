@@ -56,7 +56,9 @@ public class FastdfsConfiguration {
      * tracker心跳检测时间频率，默认30s一次，如果tracker服务器性能越强时间可以设置的越大
      */
     private Integer trackerHeartBeatCheckTime = 30;
-
+    /**
+     * 文件访问形式，默认http访问，如果是https访问修改为https://
+     */
     private String accessHead = "http://";
 
 }
