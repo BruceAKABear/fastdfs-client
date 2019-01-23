@@ -129,7 +129,10 @@ public class Tracker {
     }
 
     //用于下载
-    public BasicStorageInfo getDownloadStorage(String groupName, String fid) {
+    public BasicStorageInfo getDownloadStorage(String groupName, String remoteFileName) {
+        Socket tackerSocket = new Socket();
+        //报文头
+
         return null;
     }
 

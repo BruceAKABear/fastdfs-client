@@ -21,9 +21,6 @@ public class ConnectionFactory {
         this.fastdfsConfiguration = fastdfsConfiguration;
     }
 
-    public static Connection getConnection() {
 
-        return null;
-    }
 
 }

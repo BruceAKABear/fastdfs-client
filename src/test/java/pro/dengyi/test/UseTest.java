@@ -2,7 +2,6 @@ package pro.dengyi.test;
 
 import org.junit.Test;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
-import pro.dengyi.fastdfs.connection.Connection;
 import pro.dengyi.fastdfs.connection.ConnectionFactory;
 
 import java.io.IOException;

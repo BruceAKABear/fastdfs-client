@@ -35,7 +35,7 @@ public class ProtocolTest {
      */
     @Test
     public void demo1() throws IOException {
-        Socket socket = new Socket("192.168.199.3", 22122);
+        Socket socket = new Socket("192.168.0.178", 22122);
         OutputStream outputStream = socket.getOutputStream();
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 91, 0L, SystemStatus.SUCCESS.getValue());
         outputStream.write(protoHeader);
