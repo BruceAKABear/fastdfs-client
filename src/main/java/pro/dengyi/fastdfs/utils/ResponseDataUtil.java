@@ -127,7 +127,7 @@ public class ResponseDataUtil {
     public static StorageInfo putDataInToStorageInfo(byte[] bytes, Integer startOffSet) {
         int innerOffSet = 0;
         StorageInfo storageInfo = new StorageInfo();
-        storageInfo.setStatus((byte) 1);
+        storageInfo.setStatus(bytes[startOffSet + innerOffSet]);
         innerOffSet += 1;
         storageInfo.setId(new String(bytes, startOffSet + innerOffSet, CommonLength.STORAGE_ID_LENGTH.getLength()));
         innerOffSet += CommonLength.STORAGE_ID_LENGTH.getLength();
@@ -139,29 +139,31 @@ public class ResponseDataUtil {
         innerOffSet += 16;
         storageInfo.setVersion(new String(bytes, startOffSet + innerOffSet, 6));
         innerOffSet += 6;
+        storageInfo.setJoinTime(ProtocolUtil.byteArray2Date(bytes, startOffSet + innerOffSet));
+        innerOffSet += 8;
+        storageInfo.setUpTime(ProtocolUtil.byteArray2Date(bytes, startOffSet + innerOffSet));
+        innerOffSet += 8;
         storageInfo.setTotalMB(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
         storageInfo.setFreeMB(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
         storageInfo.setUploadPriority(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
-        storageInfo.setJoinTime(ProtocolUtil.byteArray2Date(bytes, startOffSet + innerOffSet));
-        innerOffSet += 8;
-        storageInfo.setUpTime(ProtocolUtil.byteArray2Date(bytes, startOffSet + innerOffSet));
-        innerOffSet += 8;
         storageInfo.setStorePathCount(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
         storageInfo.setSubdirCountPerPath(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
+        innerOffSet += 8;
+        storageInfo.setCurrentWritePath(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
         storageInfo.setStoragePort(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
         storageInfo.setStorageHttpPort(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;
-        storageInfo.setCurrentWritePath(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
-        innerOffSet += 8;
-        //TODO 差一个
+        storageInfo.setConnectionAllocCount(ProtocolUtil.byteArray2Int(bytes, startOffSet + innerOffSet));
         innerOffSet += 4;
+        storageInfo.setConnectionCurrentCount(ProtocolUtil.byteArray2Int(bytes, startOffSet + innerOffSet));
         innerOffSet += 4;
+        storageInfo.setConnectionMaxCount(ProtocolUtil.byteArray2Int(bytes, startOffSet + innerOffSet));
         innerOffSet += 4;
         storageInfo.setTotalUploadCount(ProtocolUtil.byteArray2Long(bytes, startOffSet + innerOffSet));
         innerOffSet += 8;

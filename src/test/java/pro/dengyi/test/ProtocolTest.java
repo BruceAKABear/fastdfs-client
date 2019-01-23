@@ -76,7 +76,7 @@ public class ProtocolTest {
             System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
         }
         socket.getOutputStream().write(wholeMessage);
-        ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), ControlCode.TRACKER_RESPONSE.getValue(), (long) -1);
+        ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
         socket.close();
         List<StorageInfo> allStorageInfo = ResponseDataUtil.getAllStorageInfo(responseData.getBody());
         System.out.println(allStorageInfo);

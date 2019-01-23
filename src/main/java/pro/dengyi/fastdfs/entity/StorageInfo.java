@@ -15,13 +15,29 @@ import java.util.Date;
 public class StorageInfo {
 
     /**
-     * 状态
+     * 存储服务器状态
+     * 1 初始化，尚未得到同步已有数据的源服务器
+     * 2 等待同步，已得到同步已有数据的源服务器
+     * 3 同步中
+     * 4 已删除，该服务器从本组中摘除
+     * 5 离线
+     * 6 在线，尚不能提供服务
+     * 7 在线，可以提供服务
      */
     private byte status;
+    /**
+     * 存储服务器ip
+     */
     private String id;
+    /**
+     * 存储服务器ip
+     */
     private String ipAddr;
     private String srcIpAddr;
-    private String domainName; //http domain name
+    /**
+     *http名
+     */
+    private String domainName;
     /**
      * 软件版本
      */
@@ -29,21 +45,21 @@ public class StorageInfo {
     /**
      * 存储服务器容量
      */
-    private long totalMB;
+    private Long totalMB;
     /**
      * 剩余容量
      */
-    private long freeMB;
+    private Long freeMB;
     /**
-     * 上传优先
+     * 上传优先及 10
      */
-    private long uploadPriority;
+    private Long uploadPriority;
     /**
      * 加入存储组时间
      */
     private Date joinTime;
     /**
-     * 开始时间
+     * 更新时间
      */
     private Date upTime;
     //store base path count of each storage server
@@ -62,49 +78,70 @@ public class StorageInfo {
      */
     private Long currentWritePath;
     private int connectionAllocCount;
-    private Long connectionCurrentCount;
+    private int connectionCurrentCount;
+    /**
+     * 
+     */
     private int connectionMaxCount;
-    private long totalUploadCount;
-    private long successUploadCount;
-    private long totalAppendCount;
-    private long successAppendCount;
-    private long totalModifyCount;
-    private long successModifyCount;
-    private long totalTruncateCount;
-    private long successTruncateCount;
-    private long totalSetMetaCount;
-    private long successSetMetaCount;
-    private long totalDeleteCount;
-    private long successDeleteCount;
-    private long totalDownloadCount;
-    private long successDownloadCount;
-    private long totalGetMetaCount;
-    private long successGetMetaCount;
-    private long totalCreateLinkCount;
-    private long successCreateLinkCount;
-    private long totalDeleteLinkCount;
-    private long successDeleteLinkCount;
-    private long totalUploadBytes;
-    private long successUploadBytes;
-    private long totalAppendBytes;
-    private long successAppendBytes;
-    private long totalModifyBytes;
-    private long successModifyBytes;
-    private long totalDownloadloadBytes;
-    private long successDownloadloadBytes;
-    private long totalSyncInBytes;
-    private long successSyncInBytes;
-    private long totalSyncOutBytes;
-    private long successSyncOutBytes;
-    private long totalFileOpenCount;
-    private long successFileOpenCount;
-    private long totalFileReadCount;
-    private long successFileReadCount;
-    private long totalFileWriteCount;
-    private long successFileWriteCount;
+    private Long totalUploadCount;
+    private Long successUploadCount;
+    private Long totalAppendCount;
+    private Long successAppendCount;
+    private Long totalModifyCount;
+    private Long successModifyCount;
+    private Long totalTruncateCount;
+    private Long successTruncateCount;
+    private Long totalSetMetaCount;
+    private Long successSetMetaCount;
+    private Long totalDeleteCount;
+    private Long successDeleteCount;
+    private Long totalDownloadCount;
+    private Long successDownloadCount;
+    private Long totalGetMetaCount;
+    private Long successGetMetaCount;
+    private Long totalCreateLinkCount;
+    private Long successCreateLinkCount;
+    private Long totalDeleteLinkCount;
+    private Long successDeleteLinkCount;
+    private Long totalUploadBytes;
+    private Long successUploadBytes;
+    private Long totalAppendBytes;
+    private Long successAppendBytes;
+    private Long totalModifyBytes;
+    private Long successModifyBytes;
+    /**
+     * 全部下载的字节数量
+     */
+    private Long totalDownloadloadBytes;
+    /**
+     * 全部成功下载字节数量
+     */
+    private Long successDownloadloadBytes;
+    /**
+     * 
+     */
+    private Long totalSyncInBytes;
+    private Long successSyncInBytes;
+    private Long totalSyncOutBytes;
+    private Long successSyncOutBytes;
+    private Long totalFileOpenCount;
+    private Long successFileOpenCount;
+    private Long totalFileReadCount;
+    private Long successFileReadCount;
+    private Long totalFileWriteCount;
+    private Long successFileWriteCount;
     private Date lastSourceUpdate;
+    /**
+     *
+     */
     private Date lastSyncUpdate;
+    /**
+     * 上一次同步时间
+     */
     private Date lastSyncedTimestamp;
+    /**
+     * 上次心跳时间
+     */
     private Date lastHeartBeatTime;
     private boolean ifTrunkServer;
 

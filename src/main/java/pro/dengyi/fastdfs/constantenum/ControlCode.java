@@ -16,6 +16,9 @@ public enum ControlCode {
      * tracker查询上传storage
      */
     TRACKER_QUERY_UPLOAD_STORAGE((byte) 101),
+    /**
+     * tracker查询更新服务器
+     */
     TRACKER_QUERY_UPDATE_STORAGE((byte) 103),
 
     /**
@@ -36,7 +39,7 @@ public enum ControlCode {
     /**
      * 获取服务器响应
      */
-    TRACKER_RESPONSE((byte) 100),
+    SERVER_RESPONSE((byte) 100),
 
     /**
      * 查询所有的存储服务器组
@@ -60,5 +63,4 @@ public enum ControlCode {
 
     public Byte getValue() {
         return value;
-    }
-}
+    }}

@@ -57,4 +57,6 @@ public class FastdfsConfiguration {
      */
     private Integer trackerHeartBeatCheckTime = 30;
 
+    private String accessHead = "http://";
+
 }
