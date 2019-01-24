@@ -161,7 +161,7 @@ public class FastdfsTemplate extends FastdfsCore {
      * @date 2019/1/22 15:53
      */
     public String uploadFile(byte[] fileBytes, List<Object> metadata) {
-        return fastdfsConfiguration.getAccessHead() +doUploadFile(fileBytes, null, null, null, metadata);
+        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, null, null, metadata);
     }
 
     /**
@@ -176,11 +176,12 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 16:02
      */
-    public String doUploadFile(byte[] fileBytes, String groupName, String masterFileName, String fileNameSuffix, List<Object> metadata) {
+    public String doUploadFile(@NotNull byte[] fileBytes, String groupName, String masterFileName, String fileNameSuffix, List<Object> metadata) {
         try {
             //获取上传文件目的地storage
             BasicStorageInfo uploadStorage = getUploadStorage(fastdfsConfiguration);
             Socket storageSocket = new Socket(uploadStorage.getIp(), Math.toIntExact(uploadStorage.getPort()));
+
             //1. 判断上传文件类型 普通上传或者是上传主从文件
             if (StringUtils.isNotBlank(masterFileName) && StringUtils.isNotBlank(fileNameSuffix)) {
                 //上传主从文件
@@ -198,7 +199,6 @@ public class FastdfsTemplate extends FastdfsCore {
 
                 } else {
                     //不需要上传metadata
-
 
                 }
 
@@ -228,10 +228,26 @@ public class FastdfsTemplate extends FastdfsCore {
      */
     public Boolean deleteFile(String fileUrl) {
         String[] groupNameAndRemoteFileName = FileNameUtil.getGroupNameAndRemoteFileName(fileUrl);
-        return deleteFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1]);
+        return deleteFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
     }
 
-    public byte[] downloadFile() {
+    /**
+     * 以字节数组的形式下载文件
+     *
+     * @param fileUrl 文件url
+     * @return byte[] 文件字节数组
+     * @author 邓艺
+     * @date 2019/1/24 11:19
+     */
+    public byte[] downloadFile(String fileUrl) {
+        String[] groupNameAndRemoteFileName = FileNameUtil.getGroupNameAndRemoteFileName(fileUrl);
+        BasicStorageInfo downloadStorage = getDownloadStorage(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
+        try {
+            Socket dowmloadStorageSocket = new Socket(downloadStorage.getIp(), Math.toIntExact(downloadStorage.getPort()));
+            return doDownloadFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], (long) 0, (long) 0, dowmloadStorageSocket);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
         return null;
     }
 
