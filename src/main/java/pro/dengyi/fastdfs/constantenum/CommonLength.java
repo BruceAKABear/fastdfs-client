@@ -26,6 +26,9 @@ public enum CommonLength {
      * 解析tracker返回命令
      */
     TRACKER_RESPONSE(100),
+    /**
+     * 存储服务器id最大长度
+     */
     STORAGE_ID_LENGTH(16),
     /**
      * 最大ip长度16

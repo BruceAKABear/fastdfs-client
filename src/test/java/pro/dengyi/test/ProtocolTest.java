@@ -208,6 +208,7 @@ public class ProtocolTest {
         FileInputStream fileInputStream = new FileInputStream(file);
         fileInputStream.read(bytes);
         Socket storageSocket = new Socket(basicStorageInfo.getIp(), Math.toIntExact(basicStorageInfo.getPort()));
+        //---------
         byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 294 * 1024 + 15, SystemStatus.SUCCESS.getValue());
 
         //组装报文内容

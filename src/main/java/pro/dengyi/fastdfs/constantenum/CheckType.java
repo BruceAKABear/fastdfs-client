@@ -11,4 +11,5 @@ public enum CheckType {
     /**
      * crc32类型
      */
-    CRC32}
+    CRC32
+}

@@ -10,7 +10,7 @@ package pro.dengyi.fastdfs.core;
  */
 public class MessageFactory {
 
-    public byte[] build(byte[] protocolHeader) {
+    public static byte[] build(byte[] protocolHeader, byte[]... bytes) {
         byte[] wholePackageMessage = new byte[10];
         return wholePackageMessage;
     }

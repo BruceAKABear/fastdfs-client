@@ -19,6 +19,7 @@ import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 import pro.dengyi.fastdfs.utils.TrackerUtil;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -147,8 +148,8 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 15:39
      */
-    public String uploadFile(byte[] fileBytes) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, null, null, null);
+    public String uploadFile(byte[] fileBytes, String fileName) {
+        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, null, null, null);
     }
 
     /**
@@ -160,15 +161,14 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 15:53
      */
-    public String uploadFile(byte[] fileBytes, List<Object> metadata) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, null, null, metadata);
+    public String uploadFile(byte[] fileBytes, String fileName, List<Object> metadata) {
+        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, null, null, metadata);
     }
 
     /**
      * 执行上传文件方法
      *
      * @param fileBytes 文件字节数组
-     * @param groupName 组名 (暂时不使用)
      * @param masterFileName 父文件名
      * @param fileNameSuffix 子文件名后缀
      * @param metadata metadata
@@ -176,7 +176,7 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 16:02
      */
-    public String doUploadFile(@NotNull byte[] fileBytes, String groupName, String masterFileName, String fileNameSuffix, List<Object> metadata) {
+    public String doUploadFile(@NotNull byte[] fileBytes, String fileName, String masterFileName, String fileNameSuffix, List<Object> metadata) {
         try {
             //获取上传文件目的地storage
             BasicStorageInfo uploadStorage = getUploadStorage(fastdfsConfiguration);
@@ -194,14 +194,34 @@ public class FastdfsTemplate extends FastdfsCore {
 
             } else {
                 //上传普通文件
-                if (CollectionUtils.isNotEmpty(metadata)) {
-                    //需要上传metadata
+                //1. 第一位为存储路径，后8位长度
+                byte[] bodyDataHeader = new byte[1 + 8];
+                //TODO 存储index
+                bodyDataHeader[0] = 0;
+                //标准后缀名字节数组
+                byte[] standardExtNameByteArry = new byte[6];
+                //                byte[] realNameByteArray = FileNameUtil.getExtNameWithDot(fileName).substring(1).getBytes(StandardCharsets.UTF_8);
+                byte[] realNameByteArray = "jpg".getBytes(StandardCharsets.UTF_8);
+                System.arraycopy(realNameByteArray, 0, standardExtNameByteArry, 0, realNameByteArray.length);
 
-                } else {
-                    //不需要上传metadata
-
-                }
-
+                //1. 产生报文头部
+                byte[] protoHeader = ProtocolUtil
+                        .getProtoHeader(ControlCode.UPLOAD.getValue(), (long) (bodyDataHeader.length + standardExtNameByteArry.length + fileBytes.length),
+                                SystemStatus.SUCCESS.getValue());
+                //2. 完整报文实际长度为头长度10+存储路径1+体长度8+扩展名长度6
+                byte[] wholeMessage = new byte[25];
+                System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+                System.arraycopy(bodyDataHeader, 0, wholeMessage, 10, 9);
+                System.arraycopy(standardExtNameByteArry, 0, wholeMessage, 19, 6);
+                //发送数据
+                OutputStream outputStream = storageSocket.getOutputStream();
+                outputStream.write(wholeMessage);
+                outputStream.write(fileBytes);
+                //获取响应值
+                ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
+                String groupName = new String(responseData.getBody(), 0, 16).trim();
+                String remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
+                return groupName + "/" + remoteFilename;
             }
         } catch (IOException e) {
             log.error("创建storagesocket时异常");
