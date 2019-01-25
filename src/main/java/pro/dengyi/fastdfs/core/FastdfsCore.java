@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Random;
 
 /**
  * tracker核心类
@@ -76,6 +77,40 @@ public class FastdfsCore {
         //TODO 关流时异常处理
         trackerSocket.close();
         return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
+    }
+
+    /**
+     * 通过tracker查询从文件上传storage
+     *
+     * @param fastdfsConfiguration 配置对象
+     * @param groupName 组名
+     * @param masterFileName 主文件名
+     * @return pro.dengyi.fastdfs.entity.BasicStorageInfo
+     * @author 邓艺
+     * @date 2019/1/25 22:57
+     */
+    public BasicStorageInfo getUploadMaterAndSlaveFileStorage(FastdfsConfiguration fastdfsConfiguration, @NotNull String groupName,
+            @NotNull String masterFileName) throws IOException {
+        Socket trackerSocket = TrackerUtil.getTrackerSocket(fastdfsConfiguration.getTrackers());
+        byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];
+        byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
+        byte[] masterFileNameBytes = masterFileName.getBytes(StandardCharsets.UTF_8);
+        byte[] protoHeader = ProtocolUtil
+                .getProtoHeader(ControlCode.TRACKER_QUERY_UPDATE_STORAGE.getValue(), (long) (standardGroupNameByteArray.length + masterFileNameBytes.length),
+                        SystemStatus.SUCCESS.getValue());
+        //完整报文组装
+        byte[] wholeMessage = new byte[26 + masterFileNameBytes.length];
+        System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+        System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
+        System.arraycopy(masterFileNameBytes, 0, wholeMessage, 26, masterFileNameBytes.length);
+        trackerSocket.getOutputStream().write(wholeMessage);
+        ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+        //39 =组名16+ip15+长度8
+        int serverCount = responseData.getBody().length / 39;
+        Random random = new Random();
+        int r = random.nextInt(serverCount);
+        return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), r * 39, false);
     }
 
     /**

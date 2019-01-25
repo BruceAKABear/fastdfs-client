@@ -65,15 +65,15 @@ public class UseTest {
      */
     @Test
     public void demo3() throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(new File("C:\\Users\\dengyi\\Desktop\\112.jpg"));
-        byte[] fileBytes = new byte[294 * 1024];
+        FileInputStream fileInputStream = new FileInputStream(new File("C:\\Users\\dengyi\\Desktop\\1111.jpg"));
+        byte[] fileBytes = new byte[522 * 1024];
         fileInputStream.read(fileBytes);
         //1. 设置参数(必须参数为tracker地址)
         FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
-        fastdfsConfiguration.setTrackers(new String[]{"61.153.187.80:22122"});
+        fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122"});
         //创建模板对象
         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-        String s = fastdfsTemplate.uploadFile(fileBytes, "112.jpg");
+        String s = fastdfsTemplate.uploadFile(fileBytes, "1111.jpg");
         System.out.println(s);
 
     }

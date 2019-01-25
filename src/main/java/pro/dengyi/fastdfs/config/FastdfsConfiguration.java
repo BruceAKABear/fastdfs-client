@@ -60,5 +60,6 @@ public class FastdfsConfiguration {
      * 文件访问形式，默认http访问，如果是https访问修改为https://
      */
     private String accessHead = "http://";
+    private Integer accessPort = 8080;
 
 }

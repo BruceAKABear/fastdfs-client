@@ -2,9 +2,11 @@ package pro.dengyi.test;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
+import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.constantenum.SystemStatus;
+import pro.dengyi.fastdfs.core.FastdfsTemplate;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
@@ -197,25 +199,25 @@ public class ProtocolTest {
          * 2.metadata是否有上传的必要，就接触的以及可能会接触的，metadata不存在用途
          */
         //1.获取上传storage
-        Socket trackerSocket = new Socket("192.168.0.178", 22122);
+        Socket trackerSocket = new Socket("192.168.199.2", 22122);
         byte[] protoHeader = ProtocolUtil.getProtoHeader((byte) 101, (long) 0, SystemStatus.SUCCESS.getValue());
         trackerSocket.getOutputStream().write(protoHeader);
         ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) 40);
         BasicStorageInfo basicStorageInfo = ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
         //上传
-        byte[] bytes = new byte[294 * 1024];
+        byte[] bytes = new byte[522 * 1024];
         File file = new File("C:\\Users\\dengyi\\Desktop\\1111.jpg");
         FileInputStream fileInputStream = new FileInputStream(file);
         fileInputStream.read(bytes);
         Socket storageSocket = new Socket(basicStorageInfo.getIp(), Math.toIntExact(basicStorageInfo.getPort()));
         //---------
-        byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 294 * 1024 + 15, SystemStatus.SUCCESS.getValue());
+        byte[] protoHeader1 = ProtocolUtil.getProtoHeader((byte) 11, (long) 522 * 1024 + 15, SystemStatus.SUCCESS.getValue());
 
         //组装报文内容
         byte[] wholePackage = new byte[25];
         System.arraycopy(protoHeader1, 0, wholePackage, 0, 10);
         //ti
-        byte[] bytes2 = ProtocolUtil.long2ByteArray((long) 294 * 1024);
+        byte[] bytes2 = ProtocolUtil.long2ByteArray((long) 522 * 1024);
         byte[] dataBody = new byte[9];
         dataBody[0] = 0;
         System.arraycopy(bytes2, 0, dataBody, 1, 8);
@@ -236,5 +238,19 @@ public class ProtocolTest {
         System.out.println("11111");
 
     }
+
+    /**
+     * 获取从文件存储服务器（随机）
+     */
+     @Test
+     public void demo8() throws IOException {
+         //1. 设置参数(必须参数为tracker地址)
+         FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+         fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
+         //创建模板对象
+         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
+         BasicStorageInfo uploadMaterAndSlaveFileStorage = fastdfsTemplate.getUploadMaterAndSlaveFileStorage(fastdfsConfiguration, "group1", "M00/00/00/wKjHBVxLnpiANuy-AAgoAP6sYQ8896.jpg");
+         System.out.println(uploadMaterAndSlaveFileStorage.getIp());
+     }
 
 }
