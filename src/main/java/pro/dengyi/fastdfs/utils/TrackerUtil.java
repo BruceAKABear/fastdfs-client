@@ -6,6 +6,8 @@ import pro.dengyi.fastdfs.exception.FastdfsException;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -50,4 +52,29 @@ public class TrackerUtil {
         }
     }
 
+    /**
+     * 获取所有tracker服务器的socket集合
+     *
+     * @param trackers tracker数组
+     * @return list tracker的socket集合
+     * @author 邓艺
+     * @date 2019/1/17 20:31
+     */
+    public static List<Socket> getAllTrackerSocket(String[] trackers) throws FastdfsException {
+        if (ArrayUtils.isNotEmpty(trackers)) {
+            List<Socket> list = new ArrayList<>();
+            for (String tracker : trackers) {
+                String[] ipAndPort = IpAddressUtil.getIpAndPort(tracker);
+                try {
+                    Socket socket = new Socket(ipAndPort[0], Integer.parseInt(ipAndPort[1]));
+                    list.add(socket);
+                } catch (IOException e) {
+                    log.error("创建tracker的socket连接时异常,请检查tracker:" + ipAndPort[0] + "的状态");
+                }
+            }
+            return list;
+        } else {
+            throw new FastdfsException("tracker集合为空异常");
+        }
+    }
 }

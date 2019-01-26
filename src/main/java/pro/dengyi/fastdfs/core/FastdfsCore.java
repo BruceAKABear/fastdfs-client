@@ -2,6 +2,7 @@ package pro.dengyi.fastdfs.core;
 
 import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
@@ -30,6 +31,8 @@ public class FastdfsCore {
 
     /**
      * 删除存储服务器
+     * <br/>
+     * 在删除的时候，因为tracker集群之间是不通信的，所以要分别去删除
      *
      * @param groupName 组名
      * @param storageIpAddr 存储服务器ip
@@ -37,9 +40,30 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/20 21:38
      */
-    public boolean deleteStorage(String groupName, String storageIpAddr) throws IOException {
+    public Boolean doDeleteStorage(FastdfsConfiguration fastdfsConfiguration, String groupName, String storageIpAddr) throws IOException {
+        //获取全部tracker的socket连接
+        List<Socket> allTrackerSocket = TrackerUtil.getAllTrackerSocket(fastdfsConfiguration.getTrackers());
+        if (CollectionUtils.isNotEmpty(allTrackerSocket)) {
+            //定义删除成功标识
+            Boolean flag = false;
+            for (Socket trackerSocket : allTrackerSocket) {
+                byte[] standardGroupNameBytes = new byte[CommonLength.GROUP_NAME_MAX_LENGTH.getLength()];
+                byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+                System.arraycopy(groupNameBytes, 0, standardGroupNameBytes, 0, groupNameBytes.length);
+                byte[] storageIpAddrBytes = storageIpAddr.getBytes(StandardCharsets.UTF_8);
+                //获取报文头
+                byte[] protoHeader = ProtocolUtil
+                        .getProtoHeader(ControlCode.TRACKER_DELETE_STORAGE.getValue(), (long) standardGroupNameBytes.length + storageIpAddrBytes.length,
+                                (byte) 0);
+                trackerSocket.getOutputStream().write(protoHeader);
+                ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) -1);
+            }
+            return flag;
+        } else {
+            //如果tracker的socket集合为空，则不能删除
+            return false;
+        }
 
-        return false;
     }
 
     /**

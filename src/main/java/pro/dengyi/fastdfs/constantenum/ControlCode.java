@@ -25,6 +25,7 @@ public enum ControlCode {
      * 删除文件命令码
      */
     DELETE((byte) 12),
+    TRACKER_DELETE_STORAGE((byte) 93),
 
     /**
      * tracker查询下载storage
