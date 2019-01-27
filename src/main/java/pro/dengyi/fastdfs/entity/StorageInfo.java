@@ -83,7 +83,13 @@ public class StorageInfo {
      * 
      */
     private int connectionMaxCount;
+    /**
+     * 上传文件次数
+     */
     private Long totalUploadCount;
+    /**
+     * 成功上传文件次数
+     */
     private Long successUploadCount;
     private Long totalAppendCount;
     private Long successAppendCount;
@@ -91,9 +97,21 @@ public class StorageInfo {
     private Long successModifyCount;
     private Long totalTruncateCount;
     private Long successTruncateCount;
+    /**
+     * 设置metadata次数
+     */
     private Long totalSetMetaCount;
+    /**
+     * 成功设置metadata次数
+     */
     private Long successSetMetaCount;
+    /**
+     * 删除文件次数
+     */
     private Long totalDeleteCount;
+    /**
+     * 成功删除文件次数
+     */
     private Long successDeleteCount;
     private Long totalDownloadCount;
     private Long successDownloadCount;
@@ -128,6 +146,9 @@ public class StorageInfo {
     private Long successFileOpenCount;
     private Long totalFileReadCount;
     private Long successFileReadCount;
+    /**
+     *
+     */
     private Long totalFileWriteCount;
     private Long successFileWriteCount;
     private Date lastSourceUpdate;

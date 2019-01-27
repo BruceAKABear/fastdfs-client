@@ -44,6 +44,10 @@ public class FastdfsConfiguration {
      */
     private Boolean openThumbnail = false;
     /**
+     * 是否开启水印
+     */
+    private Boolean openWaterMark = false;
+    /**
      * 缩略图透明度0-1之间
      */
     private Float transparency = 0f;
@@ -51,11 +55,6 @@ public class FastdfsConfiguration {
      * 水印文件位置一共9种
      */
     private String thumbnailPosition;
-
-    /**
-     * tracker心跳检测时间频率，默认30s一次，如果tracker服务器性能越强时间可以设置的越大
-     */
-    private Integer trackerHeartBeatCheckTime = 30;
     /**
      * 文件访问形式，默认http访问，如果是https访问修改为https://
      */

@@ -9,11 +9,16 @@ import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.constantenum.SystemStatus;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
+import pro.dengyi.fastdfs.threads.UploadMetadataThread;
+import pro.dengyi.fastdfs.utils.FileNameUtil;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 import pro.dengyi.fastdfs.utils.TrackerUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -30,7 +35,7 @@ import java.util.Random;
 public class FastdfsCore {
 
     /**
-     * 删除存储服务器
+     * 将存储服务器从集群中删除
      * <br/>
      * 在删除的时候，因为tracker集群之间是不通信的，所以要分别去删除
      *
@@ -40,7 +45,7 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/20 21:38
      */
-    public Boolean doDeleteStorage(FastdfsConfiguration fastdfsConfiguration, String groupName, String storageIpAddr) throws IOException {
+    public Boolean doDeleteStorage(FastdfsConfiguration fastdfsConfiguration, String groupName, String storageIpAddr) {
         //获取全部tracker的socket连接
         List<Socket> allTrackerSocket = TrackerUtil.getAllTrackerSocket(fastdfsConfiguration.getTrackers());
         if (CollectionUtils.isNotEmpty(allTrackerSocket)) {
@@ -55,15 +60,82 @@ public class FastdfsCore {
                 byte[] protoHeader = ProtocolUtil
                         .getProtoHeader(ControlCode.TRACKER_DELETE_STORAGE.getValue(), (long) standardGroupNameBytes.length + storageIpAddrBytes.length,
                                 (byte) 0);
-                trackerSocket.getOutputStream().write(protoHeader);
-                ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) -1);
+                try {
+                    trackerSocket.getOutputStream().write(protoHeader);
+                    ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) -1);
+                    flag = responseData.getErrorNo() == 0;
+                } catch (IOException e) {
+                    log.error(e.getMessage());
+                }
             }
             return flag;
         } else {
-            //如果tracker的socket集合为空，则不能删除
             return false;
         }
 
+    }
+
+    /**
+     * 执行上传文件
+     *
+     * @param fileBytes 文件字节数组
+     * @param fileName 文件名
+     * @param metadata 元数据
+     * @return java.lang.String
+     * @author 邓艺
+     * @date 2019/1/25 22:34
+     */
+    public String doUploadFile(@NotNull byte[] fileBytes, String fileName, List<Object> metadata, FastdfsConfiguration fastdfsConfiguration) {
+        String groupName = null;
+        String remoteFilename = null;
+        BasicStorageInfo uploadStorage = null;
+        try {
+            //获取上传文件目的地storage
+            uploadStorage = getUploadStorage(fastdfsConfiguration);
+            Socket storageSocket = new Socket(uploadStorage.getIp(), Math.toIntExact(uploadStorage.getPort()));
+            //上传普通文件
+            //1. 第一位为存储路径，后8位长度
+            byte[] bodyDataHeader = new byte[1 + 8];
+            //TODO 存储index
+            bodyDataHeader[0] = 0;
+            byte[] fileLengthByteArray = ProtocolUtil.long2ByteArray((long) fileBytes.length);
+            System.arraycopy(fileLengthByteArray, 0, bodyDataHeader, 1, 8);
+            //标准后缀名字节数组
+            byte[] standardExtNameByteArry = new byte[6];
+            byte[] realNameByteArray = FileNameUtil.getExtNameWithDot(fileName).substring(1).getBytes(StandardCharsets.UTF_8);
+            System.arraycopy(realNameByteArray, 0, standardExtNameByteArry, 0, realNameByteArray.length);
+
+            //1. 产生报文头部
+            byte[] protoHeader = ProtocolUtil
+                    .getProtoHeader(ControlCode.UPLOAD.getValue(), (long) (bodyDataHeader.length + standardExtNameByteArry.length + fileBytes.length),
+                            SystemStatus.SUCCESS.getValue());
+            //2. 完整报文实际长度为头长度10+存储路径1+体长度8+扩展名长度6
+            byte[] wholeMessage = new byte[25];
+            System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+            System.arraycopy(bodyDataHeader, 0, wholeMessage, 10, 9);
+            System.arraycopy(standardExtNameByteArry, 0, wholeMessage, 19, 6);
+            //发送数据
+            OutputStream outputStream = storageSocket.getOutputStream();
+            outputStream.write(wholeMessage);
+            outputStream.write(fileBytes);
+            //获取响应值
+            ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
+            groupName = new String(responseData.getBody(), 0, 16).trim();
+            remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
+            //判断是否要上传主从文件（缩略图）
+            if (fastdfsConfiguration.getOpenThumbnail()) {
+
+            }
+            //如果需要上传metadata启动上传metadata线程
+            if (CollectionUtils.isNotEmpty(metadata)) {
+                new Thread(new UploadMetadataThread(groupName, remoteFilename, metadata, storageSocket)).start();
+            } else {
+                storageSocket.close();
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+        return uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
     }
 
     /**
@@ -77,9 +149,22 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/24 9:38
      */
-    public Boolean uploadMetadeta(String groupName, String remoteFileName, List<Object> metadata, FastdfsConfiguration fastdfsConfiguration) {
+    public Boolean doUploadMetadeta(String groupName, String remoteFileName, List<Object> metadata, FastdfsConfiguration fastdfsConfiguration) {
 
         return false;
+    }
+
+    /**
+     * 获取metadata
+     *
+     * @param groupName 组名
+     * @param remoteFileName 远程文件名
+     * @return List metadata集合
+     * @author 邓艺
+     * @date 2019/1/27 14:59
+     */
+    public List<Object> doGetMetadata(String groupName, String remoteFileName) {
+        return null;
     }
 
     /**
@@ -113,8 +198,8 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/25 22:57
      */
-    public BasicStorageInfo getUploadMaterAndSlaveFileStorage(FastdfsConfiguration fastdfsConfiguration, @NotNull String groupName,
-            @NotNull String masterFileName) throws IOException {
+    public BasicStorageInfo getUploadSlaveFileStorage(FastdfsConfiguration fastdfsConfiguration, @NotNull String groupName, @NotNull String masterFileName)
+            throws IOException {
         Socket trackerSocket = TrackerUtil.getTrackerSocket(fastdfsConfiguration.getTrackers());
         byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];
         byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
@@ -135,6 +220,18 @@ public class FastdfsCore {
         Random random = new Random();
         int r = random.nextInt(serverCount);
         return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), r * 39, false);
+    }
+
+    public String doUploadSlaveFile(FastdfsConfiguration fastdfsConfiguration, byte[] fileBytes, String groupName, String masterFileName,
+            String fileNameSuffix) {
+        //判断是否需要添加水印
+        if (fastdfsConfiguration.getOpenWaterMark()) {
+
+        }
+
+        InputStream inputStream = new ByteArrayInputStream(fileBytes);
+
+        return null;
     }
 
     /**
@@ -287,7 +384,7 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 13:02
      */
-    public Boolean deleteFile(String groupName, String remoteFileName, FastdfsConfiguration fastdfsConfiguration) {
+    public Boolean doDeleteFile(String groupName, String remoteFileName, FastdfsConfiguration fastdfsConfiguration) {
         //通过tracker获取
         BasicStorageInfo updateStorage = getUpdateStorage(groupName, remoteFileName, fastdfsConfiguration);
         //获取storage socket然后进行删除

@@ -249,7 +249,7 @@ public class ProtocolTest {
          fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
          //创建模板对象
          FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-         BasicStorageInfo uploadMaterAndSlaveFileStorage = fastdfsTemplate.getUploadMaterAndSlaveFileStorage(fastdfsConfiguration, "group1", "M00/00/00/wKjHBVxLnpiANuy-AAgoAP6sYQ8896.jpg");
+         BasicStorageInfo uploadMaterAndSlaveFileStorage = fastdfsTemplate.getUploadSlaveFileStorage(fastdfsConfiguration, "group1", "M00/00/00/wKjHBVxLnpiANuy-AAgoAP6sYQ8896.jpg");
          System.out.println(uploadMaterAndSlaveFileStorage.getIp());
      }
 

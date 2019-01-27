@@ -2,7 +2,6 @@ package pro.dengyi.fastdfs.core;
 
 import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
@@ -13,14 +12,12 @@ import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
 import pro.dengyi.fastdfs.exception.FastdfsException;
-import pro.dengyi.fastdfs.threads.UploadMetadataThread;
 import pro.dengyi.fastdfs.utils.FileNameUtil;
 import pro.dengyi.fastdfs.utils.ProtocolUtil;
 import pro.dengyi.fastdfs.utils.ResponseDataUtil;
 import pro.dengyi.fastdfs.utils.TrackerUtil;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -99,6 +96,19 @@ public class FastdfsTemplate extends FastdfsCore {
     }
 
     /**
+     * 将存储服务器从集群中删除
+     *
+     * @param groupName 组名
+     * @param storageIpAddr 文件服务器ip
+     * @return java.lang.Boolean
+     * @author 邓艺
+     * @date 2019/1/27 15:45
+     */
+    public Boolean deleteSotrage(String groupName, String storageIpAddr) {
+        return doDeleteStorage(fastdfsConfiguration, groupName, storageIpAddr);
+    }
+
+    /**
      * 获取存储组下指定ip的storage的信息
      *
      * @param groupName 组名不能为空
@@ -150,7 +160,7 @@ public class FastdfsTemplate extends FastdfsCore {
      * @date 2019/1/22 15:39
      */
     public String uploadFile(byte[] fileBytes, String fileName) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, null);
+        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, null, fastdfsConfiguration);
     }
 
     /**
@@ -163,98 +173,20 @@ public class FastdfsTemplate extends FastdfsCore {
      * @date 2019/1/22 15:53
      */
     public String uploadFile(byte[] fileBytes, String fileName, List<Object> metadata) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, metadata);
+        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, fileName, metadata, fastdfsConfiguration);
     }
 
     /**
-     * 执行上传从文件方法
-     * 思考:从文件正常情况都是缩略图，在上传缩略图从何谈起上传元数据呢？所以上传从文件时不考虑伤上传元数据！
+     * 上传断点续传文件
      *
-     * @param fileBytes 文件字节数组
-     * @param masterFileName 父文件名
-     * @param fileNameSuffix 子文件名后缀
-     * @return java.lang.String
-     * @author 邓艺
-     * @date 2019/1/22 16:02
-     */
-    public String doUploadSlaveFile(@NotNull byte[] fileBytes, String groupName, String masterFileName, String fileNameSuffix) {
-        try {
-            //获取主从文件storage
-            BasicStorageInfo uploadMaterAndSlaveFileStorage = getUploadMaterAndSlaveFileStorage(fastdfsConfiguration, groupName, masterFileName);
-            Socket storageSocket = new Socket(uploadMaterAndSlaveFileStorage.getIp(), Math.toIntExact(uploadMaterAndSlaveFileStorage.getPort()));
-
-        } catch (IOException e) {
-            log.error("创建storagesocket时异常");
-        }
-
-        return null;
-    }
-
-    /**
-     * 执行上传文件
-     *
-     * @param fileBytes 文件字节数组
+     * @param fileBytes 文件数组
      * @param fileName 文件名
-     * @param metadata 元数据
      * @return java.lang.String
      * @author 邓艺
-     * @date 2019/1/25 22:34
+     * @date 2019/1/27 15:49
      */
-    private String doUploadFile(@NotNull byte[] fileBytes, String fileName, List<Object> metadata) {
-        String groupName = null;
-        String remoteFilename = null;
-        BasicStorageInfo uploadStorage = null;
-        try {
-            //获取上传文件目的地storage
-            uploadStorage = getUploadStorage(fastdfsConfiguration);
-            Socket storageSocket = new Socket(uploadStorage.getIp(), Math.toIntExact(uploadStorage.getPort()));
-            //上传普通文件
-            //1. 第一位为存储路径，后8位长度
-            byte[] bodyDataHeader = new byte[1 + 8];
-            //TODO 存储index
-            bodyDataHeader[0] = 0;
-            byte[] fileLengthByteArray = ProtocolUtil.long2ByteArray((long) fileBytes.length);
-            System.arraycopy(fileLengthByteArray, 0, bodyDataHeader, 1, 8);
-            //标准后缀名字节数组
-            byte[] standardExtNameByteArry = new byte[6];
-            byte[] realNameByteArray = FileNameUtil.getExtNameWithDot(fileName).substring(1).getBytes(StandardCharsets.UTF_8);
-            System.arraycopy(realNameByteArray, 0, standardExtNameByteArry, 0, realNameByteArray.length);
-
-            //1. 产生报文头部
-            byte[] protoHeader = ProtocolUtil
-                    .getProtoHeader(ControlCode.UPLOAD.getValue(), (long) (bodyDataHeader.length + standardExtNameByteArry.length + fileBytes.length),
-                            SystemStatus.SUCCESS.getValue());
-            //2. 完整报文实际长度为头长度10+存储路径1+体长度8+扩展名长度6
-            byte[] wholeMessage = new byte[25];
-            System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
-            System.arraycopy(bodyDataHeader, 0, wholeMessage, 10, 9);
-            System.arraycopy(standardExtNameByteArry, 0, wholeMessage, 19, 6);
-            //发送数据
-            OutputStream outputStream = storageSocket.getOutputStream();
-            outputStream.write(wholeMessage);
-            outputStream.write(fileBytes);
-            //获取响应值
-            ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
-            groupName = new String(responseData.getBody(), 0, 16).trim();
-            remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
-            //如果需要上传metadata启动上传metadata线程
-            if (CollectionUtils.isNotEmpty(metadata)) {
-                new Thread(new UploadMetadataThread(groupName, remoteFilename, metadata, storageSocket)).start();
-            } else {
-                storageSocket.close();
-            }
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-        return uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
-    }
-
-    public String uploadAppenderFile() {
+    public String uploadAppenderFile(byte[] fileBytes, String fileName) {
         return null;
-    }
-
-    public Boolean uploadMetadata() {
-        return false;
     }
 
     /**
@@ -267,7 +199,7 @@ public class FastdfsTemplate extends FastdfsCore {
      */
     public Boolean deleteFile(String fileUrl) {
         String[] groupNameAndRemoteFileName = FileNameUtil.getGroupNameAndRemoteFileName(fileUrl);
-        return deleteFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
+        return doDeleteFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
     }
 
     /**

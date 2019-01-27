@@ -15,29 +15,46 @@
 ## 所提供的功能
 ### 1. 查询存储组
 ### 2. 查询每个存储组下所有存储storage信息
-## 3.使用
+## 3.基本使用
 ### 3.1 添加maven依赖
 ```java
 
 ```
-### 3.2 创建连接工厂
+### 3.2 创建配置对象
 ```java
-
+FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
+//创建模板对象
+FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
+//利用fasdfs模板对文件进行操作
 ```
++ 配置文件解释
+  - 网络连接超时时间,单位为毫秒 networkTimeOut 默认超时时间30秒
+  - tracker集合 trackers
+  - 连接tracker超时时间 connectTimeout
+  - openAntiSteal 是否开启防盗链功能，默认关闭
+  - 防盗链密钥 secretKey 
+  - 是否开启缩略图 openThumbnail 默认关闭，缩略图之对于图片有效
+  - 缩略图透明度 transparency 0-1之间
+  - 水印位置 一共9中位置 thumbnailPosition
+  - 文件访问方式 accessHead 默认http方式
+  - 文件访问端口 accessPort
 ### 3.3 调用API进行操作
-#### 3.3.1 文件的上传
+#### 3.3.1 查询所有存储服务器组信息
 ```java
-
+ List<StorageGroupInfo> allStorageGroupInfo = fastdfsTemplate.getAllStorageGroupInfo();
 ```
-#### 3.3.2 文件的断点续传
+
+#### 3.3.2 查询组下所有所有存储服务器相关信息
 ```java
-
+List<StorageInfo> allStorageInfo = fastdfsTemplate.getAllStorageInfo(groupName);
 ```
-#### 3.3.3 文件的下载
+#### 3.3.3 文件上传
+##### 3.3.3.1 以文件字节数组的形式上传文件
 ```java
-
+String s = fastdfsTemplate.uploadFile(fileBytes, "112.jpg");
 ```
-#### 3.3.3 文件的删除
+#### 3.3.4 文件的删除
 ```java
 
 ```
