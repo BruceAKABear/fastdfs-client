@@ -22,6 +22,8 @@ public class TrackerUtil {
 
     /**
      * 随机获取tracker服务器ip和端口
+     * <br/>
+     * 连接重试次数为tracker数量
      *
      * @param trackers tracker数组
      * @return String[] 单个ip和端口字符串数组
@@ -31,20 +33,22 @@ public class TrackerUtil {
     public static Socket getTrackerSocket(String[] trackers) throws FastdfsException {
         if (ArrayUtils.isNotEmpty(trackers)) {
             int trackerNumber = trackers.length;
-            String tracker = null;
-            //如果只有1个tracker不自动生成
-            if (trackerNumber == 1) {
-                tracker = trackers[0];
-            } else {
-                //如果tracker为组，那么自动生成
-                Random r = new Random();
-                tracker = trackers[r.nextInt(trackerNumber)];
-            }
-            String[] ipAndPort = IpAddressUtil.getIpAndPort(tracker);
-            try {
-                return new Socket(ipAndPort[0], Integer.parseInt(ipAndPort[1]));
-            } catch (IOException e) {
-                log.error("连接tracker" + tracker + "时异常，请排查tracker服务器");
+            for (int i = 0; i < trackerNumber; i++) {
+                String tracker = null;
+                //如果只有1个tracker不自动生成
+                if (trackerNumber == 1) {
+                    tracker = trackers[0];
+                } else {
+                    //如果tracker为组，那么自动生成
+                    Random r = new Random();
+                    tracker = trackers[r.nextInt(trackerNumber)];
+                }
+                String[] ipAndPort = IpAddressUtil.getIpAndPort(tracker);
+                try {
+                    return new Socket(ipAndPort[0], Integer.parseInt(ipAndPort[1]));
+                } catch (IOException e) {
+                    log.error("连接tracker时异常" + e.getMessage());
+                }
             }
             return null;
         } else {

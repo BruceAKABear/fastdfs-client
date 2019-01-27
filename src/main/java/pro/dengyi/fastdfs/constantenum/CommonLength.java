@@ -18,15 +18,6 @@ public enum CommonLength {
      */
     GROUP_NAME_MAX_LENGTH(16),
     /**
-     * 包长度
-     */
-    PROTO_PACKAGE_LENGTH(8),
-
-    /**
-     * 解析tracker返回命令
-     */
-    TRACKER_RESPONSE(100),
-    /**
      * 存储服务器id最大长度
      */
     STORAGE_ID_LENGTH(16),
@@ -47,5 +38,4 @@ public enum CommonLength {
 
     public Integer getLength() {
         return length;
-    }
-}
+    }}

@@ -30,7 +30,7 @@ public enum ControlCode {
     /**
      * tracker查询下载storage
      */
-    TRACKER_QUERY_DOWNLOAD_STORAGE((byte) 105),
+    TRACKER_QUERY_DOWNLOAD_STORAGE((byte) 102),
     /**
      * 下载文件命令码
      */
@@ -68,5 +68,4 @@ public enum ControlCode {
 
     public Byte getValue() {
         return value;
-    }
-}
+    }}

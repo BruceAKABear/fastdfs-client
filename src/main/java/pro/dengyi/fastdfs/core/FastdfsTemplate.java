@@ -7,7 +7,6 @@ import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.constantenum.SystemStatus;
-import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
@@ -82,17 +81,35 @@ public class FastdfsTemplate extends FastdfsCore {
      * 查询存储组下所有storage的信息
      *
      * @param groupName 组名
-     * @return pro.dengyi.fastdfs.core.Storage[]
+     * @return pro.dengyi.fastdfs.core.Storage[] 如果失败则返回null
      * @author 邓艺
      * @date 2019/1/15 14:43
      */
-    public List<StorageInfo> getAllStorageInfo(@NotNull String groupName) {
+    public List<StorageInfo> doGetAllStorageInfo(@NotNull String groupName) {
         try {
-            return getAllStorageInfo(groupName, null);
+            return doGetAllStorageInfo(groupName, null);
         } catch (IOException e) {
             log.error(e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * 获取特定存储服务器的信息
+     *
+     * @param groupName 组名
+     * @param storageIpAddr 服务器地址
+     * @return pro.dengyi.fastdfs.entity.StorageInfo 如果失败则返回null
+     * @author 邓艺
+     * @date 2019/1/27 22:28
+     */
+    public StorageInfo getStorageInfo(String groupName, String storageIpAddr) {
+        try {
+            return doGetAllStorageInfo(groupName, storageIpAddr).get(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -117,7 +134,7 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/18 12:38
      */
-    public List<StorageInfo> getAllStorageInfo(@NotNull String groupName, String storageIpAddr) throws FastdfsException, IOException {
+    public List<StorageInfo> doGetAllStorageInfo(@NotNull String groupName, String storageIpAddr) throws FastdfsException, IOException {
         if (StringUtils.isBlank(groupName)) {
             throw new FastdfsException("获取storage信息时，groupName不能为空");
         } else {
@@ -211,15 +228,8 @@ public class FastdfsTemplate extends FastdfsCore {
      * @date 2019/1/24 11:19
      */
     public byte[] downloadFile(String fileUrl) {
-        String[] groupNameAndRemoteFileName = FileNameUtil.getGroupNameAndRemoteFileName(fileUrl);
-        BasicStorageInfo downloadStorage = getDownloadStorage(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
-        try {
-            Socket dowmloadStorageSocket = new Socket(downloadStorage.getIp(), Math.toIntExact(downloadStorage.getPort()));
-            return doDownloadFile(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], (long) 0, (long) 0, dowmloadStorageSocket);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-        return null;
+        return doDownloadFile(fileUrl, (long) 0, (long) 0, fastdfsConfiguration);
+
     }
 
 }

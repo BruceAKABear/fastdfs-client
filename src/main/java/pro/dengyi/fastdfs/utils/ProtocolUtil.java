@@ -99,9 +99,20 @@ public class ProtocolUtil {
             return new ReceiveData((byte) 1, null);
         } else {
             //服务器响应正常，读取数据
+            //TODO 数据的读取封装是一个很好玩的地方，值得研究一下
             byte[] dataBody = new byte[Math.toIntExact(responseHeader.getDataBodyLength())];
+            int totalBytes = 0;
+            int remainBytes = Math.toIntExact(responseHeader.getDataBodyLength());
+            int bytes;
+            while (totalBytes < responseHeader.getDataBodyLength()) {
+                if ((bytes = inputStream.read(dataBody, totalBytes, remainBytes)) < 0) {
+                    break;
+                }
+                totalBytes += bytes;
+                remainBytes -= bytes;
+            }
             if (inputStream.read(dataBody) != Math.toIntExact(responseHeader.getDataBodyLength())) {
-                throw new FastdfsException("实际读取的字节数非法");
+                throw new FastdfsException("读取到的字节数和期望数据数不相同");
             }
             return new ReceiveData((byte) 0, dataBody);
         }

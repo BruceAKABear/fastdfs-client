@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -244,25 +245,23 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/24 9:50
      */
-    public BasicStorageInfo getDownloadStorage(String groupName, String remoteFileName, FastdfsConfiguration fastdfsConfiguration) {
+    public List<BasicStorageInfo> getDownloadStorage(String groupName, String remoteFileName, FastdfsConfiguration fastdfsConfiguration) {
         //组装报文
         byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];
         byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
         System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
         byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
-        byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_QUERY_DOWNLOAD_STORAGE.getValue(),
-                (long) (CommonLength.MAX_GROUPNAME_LENGTH.getLength() + remoteFileNameBytes.length), SystemStatus.SUCCESS.getValue());
+        byte[] protoHeader = ProtocolUtil
+                .getProtoHeader(ControlCode.TRACKER_QUERY_DOWNLOAD_STORAGE.getValue(), (long) standardGroupNameByteArray.length + remoteFileNameBytes.length,
+                        SystemStatus.SUCCESS.getValue());
         //3. 生成完整数据包
-        byte[] wholeMessage = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength() + remoteFileNameBytes.length + CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH
-                .getLength()];
+        byte[] wholeMessage = new byte[standardGroupNameByteArray.length + remoteFileNameBytes.length + protoHeader.length];
         //头
-        System.arraycopy(protoHeader, 0, wholeMessage, 0, CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getLength());
+        System.arraycopy(protoHeader, 0, wholeMessage, 0, protoHeader.length);
         //组名
-        System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getLength(),
-                CommonLength.MAX_GROUPNAME_LENGTH.getLength());
+        System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, protoHeader.length, standardGroupNameByteArray.length);
         //文件名
-        System.arraycopy(remoteFileNameBytes, 0, wholeMessage,
-                CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getLength() + CommonLength.MAX_GROUPNAME_LENGTH.getLength(), remoteFileNameBytes.length);
+        System.arraycopy(remoteFileNameBytes, 0, wholeMessage, protoHeader.length + standardGroupNameByteArray.length, remoteFileNameBytes.length);
         //获取tracker连接
         try {
             Socket trackerSocket = TrackerUtil.getTrackerSocket(fastdfsConfiguration.getTrackers());
@@ -270,8 +269,14 @@ public class FastdfsCore {
             trackerSocket.getOutputStream().write(wholeMessage);
             ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
             //TODO 处理关闭时异常
+            //将返回的storage信息封装
             trackerSocket.close();
-            return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
+            int number = responseData.getBody().length / 39;
+            List<BasicStorageInfo> basicStorageInfos = new ArrayList<>(number);
+            for (int i = 0; i < number; i++) {
+                basicStorageInfos.add(ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false));
+            }
+            return basicStorageInfos;
         } catch (IOException e) {
             log.error("获取下载storage时socket异常");
             return null;
@@ -284,26 +289,30 @@ public class FastdfsCore {
      * <br/>
      * 如果下载失败，返回null
      *
-     * @param groupName 组名
-     * @param remoteFileName 远程文件名
+     * @param fileUrl 文件名
      * @param offSet 偏移量
      * @param downloadBytes 下载文件字节数
+     * @param fastdfsConfiguration 配置对象
      * @return byte[] 字节数组
      * @author 邓艺
      * @date 2019/1/24 10:47
      */
-    public byte[] doDownloadFile(@NotNull String groupName, @NotNull String remoteFileName, Long offSet, Long downloadBytes, Socket dowmloadStorageSocket) {
+    public byte[] doDownloadFile(String fileUrl, Long offSet, Long downloadBytes, FastdfsConfiguration fastdfsConfiguration) {
+        //获取下载文件storage信息
+        String[] groupNameAndRemoteFileName = FileNameUtil.getGroupNameAndRemoteFileName(fileUrl);
+        List<BasicStorageInfo> downloadStorageInfos = getDownloadStorage(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
+        //发送下载报文
         byte[] offSetByteArray = ProtocolUtil.long2ByteArray(offSet);
         byte[] ByteArray = ProtocolUtil.long2ByteArray(downloadBytes);
         byte[] standardGroupNameByteArray = new byte[CommonLength.GROUP_NAME_MAX_LENGTH.getLength()];
-        byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+        byte[] groupNameBytes = groupNameAndRemoteFileName[0].getBytes(StandardCharsets.UTF_8);
         System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
-        byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
+        byte[] remoteFileNameBytes = groupNameAndRemoteFileName[1].getBytes(StandardCharsets.UTF_8);
         //下载报文头
         byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.DOWNLOAD.getValue(),
-                (long) offSetByteArray.length + ByteArray.length + CommonLength.GROUP_NAME_MAX_LENGTH.getLength() + remoteFileNameBytes.length, (byte) 0);
-        byte[] wholeMessage = new byte[offSetByteArray.length + ByteArray.length + CommonLength.GROUP_NAME_MAX_LENGTH.getLength() + remoteFileNameBytes.length
-                + CommonLength.STANDARD_PROTOCOL_HEAD_LENGTH.getLength()];
+                (long) offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length + remoteFileNameBytes.length, (byte) 0);
+        byte[] wholeMessage = new byte[protoHeader.length + offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length
+                + remoteFileNameBytes.length];
         //报文组装
         System.arraycopy(protoHeader, 0, wholeMessage, 0, protoHeader.length);
         System.arraycopy(offSetByteArray, 0, wholeMessage, protoHeader.length, offSetByteArray.length);
@@ -314,13 +323,11 @@ public class FastdfsCore {
                 protoHeader.length + offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length, remoteFileNameBytes.length);
         //将数据写出
         try {
-            dowmloadStorageSocket.getOutputStream().write(wholeMessage);
-        } catch (IOException e) {
-            log.error(e.getMessage());
-        }
-        //接受数据
-        try {
-            ReceiveData responseData = ProtocolUtil.getResponseData(dowmloadStorageSocket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+            Socket downloadStorage = new Socket(downloadStorageInfos.get(0).getIp(), Math.toIntExact(downloadStorageInfos.get(0).getPort()));
+            downloadStorage.getOutputStream().write(wholeMessage);
+            //接受数据
+            ReceiveData responseData = ProtocolUtil.getResponseData(downloadStorage.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+            downloadStorage.close();
             return responseData.getBody();
         } catch (IOException e) {
             log.error(e.getMessage());

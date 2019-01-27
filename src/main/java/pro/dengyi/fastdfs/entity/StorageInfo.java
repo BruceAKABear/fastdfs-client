@@ -35,7 +35,7 @@ public class StorageInfo {
     private String ipAddr;
     private String srcIpAddr;
     /**
-     *http名
+     * http名
      */
     private String domainName;
     /**
@@ -80,7 +80,7 @@ public class StorageInfo {
     private int connectionAllocCount;
     private int connectionCurrentCount;
     /**
-     * 
+     *
      */
     private int connectionMaxCount;
     /**
@@ -136,7 +136,7 @@ public class StorageInfo {
      */
     private Long successDownloadloadBytes;
     /**
-     * 
+     *
      */
     private Long totalSyncInBytes;
     private Long successSyncInBytes;

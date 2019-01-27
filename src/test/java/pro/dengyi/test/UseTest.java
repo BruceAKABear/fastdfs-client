@@ -7,9 +7,7 @@ import pro.dengyi.fastdfs.core.FastdfsTemplate;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -26,7 +24,7 @@ public class UseTest {
     public void demo1() {
         //1. 设置参数(必须参数为tracker地址)
         FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
-        fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
+        fastdfsConfiguration.setTrackers(new String[]{"61.153.187.80:22122"});
         //创建模板对象
         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
         //进行操作
@@ -51,7 +49,7 @@ public class UseTest {
         //进行操作
         String groupName = "group1";
         //        String ipaddr = "192.168.199.7";
-        List<StorageInfo> allStorageInfo = fastdfsTemplate.getAllStorageInfo(groupName);
+        List<StorageInfo> allStorageInfo = fastdfsTemplate.doGetAllStorageInfo(groupName);
         if (CollectionUtils.isNotEmpty(allStorageInfo)) {
             for (StorageInfo storageInfo : allStorageInfo) {
                 System.out.println(storageInfo);
@@ -65,22 +63,34 @@ public class UseTest {
      */
     @Test
     public void demo3() throws IOException {
-        FileInputStream fileInputStream = new FileInputStream(new File("C:\\Users\\dengyi\\Desktop\\112.jpg"));
-        byte[] fileBytes = new byte[294 * 1024];
+        File file =  new File("C:\\Users\\dengyi\\Desktop\\1111.jpg");
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[(int) file.length()];
         fileInputStream.read(fileBytes);
         //1. 设置参数(必须参数为tracker地址)
         FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
-        fastdfsConfiguration.setTrackers(new String[]{"192.168.0.178:22122"});
+        fastdfsConfiguration.setTrackers(new String[]{"61.153.187.80:22122"});
         //创建模板对象
         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-        String s = fastdfsTemplate.uploadFile(fileBytes, "112.jpg");
+        String s = fastdfsTemplate.uploadFile(fileBytes, file.getName());
         System.out.println(s);
 
     }
 
+    /**
+     * 字节数据的形式下载文件
+     */
     @Test
-    public void demo4() {
+    public void demo4() throws IOException {
+        FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+        fastdfsConfiguration.setTrackers(new String[]{"61.153.187.80:22122"});
+        //创建模板对象
+        FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
+        byte[] bytes = fastdfsTemplate.downloadFile("http://61.153.187.80:9000/group1/M00/00/1D/wKgBDFxNqL-AJMAxAAgq1ZfG2-8804.jpg");
+        String s = fastdfsTemplate.uploadFile(bytes, "2222.jpg");
+        System.out.println(s);
 
     }
+
 
 }
