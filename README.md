@@ -29,16 +29,23 @@ FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
 //利用fasdfs模板对文件进行操作
 ```
 + 配置文件解释
-  - 网络连接超时时间,单位为毫秒 networkTimeOut 默认超时时间30秒
-  - tracker集合 trackers
-  - 连接tracker超时时间 connectTimeout
+  - networkTimeOut 网络连接超时时间,单位为毫秒  默认超时时间30秒
+  - trackers tracker集合 
+  - connectTimeout 连接tracker超时时间 
   - openAntiSteal 是否开启防盗链功能，默认关闭
-  - 防盗链密钥 secretKey 
-  - 是否开启缩略图 openThumbnail 默认关闭，缩略图之对于图片有效
-  - 缩略图透明度 transparency 0-1之间
-  - 水印位置 一共9中位置 thumbnailPosition
-  - 文件访问方式 accessHead 默认http方式
-  - 文件访问端口 accessPort
+  - secretKey 防盗链密钥  
+  - openThumbnail 是否开启缩略图  默认关闭，缩略图之对于图片有效
+  - thumbnailStrategy 缩略图生成策略 0严格按照给定尺寸生成，1宽度优先，2高度优先
+  - thumbnailWidth 缩略图宽度
+  - thumbnailHeight 缩略图高度
+  - openWaterMark 是否开启水印
+  - waterMarktransparency  水印透明度0-1
+  - waterMarkPosition 水印位置 一共9中位置
+  > TOP_LEFT:左上      TOP_CENTER:上中     TOP_RIGHT:右上
+  > CENTER_LEFT:左中   CENTER:中中         CENTER_RIGHT:右中
+  > BOTTOM_LEFT:左下   BOTTOM_CENTER:下中  BOTTOM_RIGHT:右下
+  - accessHead 文件访问方式  默认http方式
+  - accessPort 文件访问端口 
 ### 3.3 调用API进行操作
 #### 3.3.1 查询所有存储服务器组信息
 ```java

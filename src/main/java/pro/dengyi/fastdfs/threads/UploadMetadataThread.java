@@ -2,6 +2,7 @@ package pro.dengyi.fastdfs.threads;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.net.Socket;
 import java.util.List;
@@ -18,13 +19,13 @@ import java.util.List;
 public class UploadMetadataThread implements Runnable {
     private String groupName;
     private String remoteFileName;
-    private List<Object> metadata;
+    private List<String> metadata;
     /**
      * 存储服务器的socket连接
      */
     private Socket storageScoket;
 
-    public UploadMetadataThread(String groupName, String remoteFileName, List<Object> metadata, Socket storageScoket) {
+    public UploadMetadataThread(String groupName, String remoteFileName, List<String> metadata, Socket storageScoket) {
         this.groupName = groupName;
         this.remoteFileName = remoteFileName;
         this.metadata = metadata;
@@ -33,6 +34,13 @@ public class UploadMetadataThread implements Runnable {
 
     @Override
     public void run() {
+        if (CollectionUtils.isNotEmpty(metadata)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(metadata.get(0));
+            for (int i = 1; i < metadata.size(); i++) {
+
+            }
+        }
 
     }
 }

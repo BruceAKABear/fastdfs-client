@@ -189,7 +189,7 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 15:53
      */
-    public String uploadFile(byte[] fileBytes, String fileName, List<Object> metadata) {
+    public String uploadFile(byte[] fileBytes, String fileName, List<String> metadata) {
         return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, fileName, metadata, fastdfsConfiguration);
     }
 

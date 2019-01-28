@@ -2,9 +2,6 @@ package pro.dengyi.fastdfs.config;
 
 import lombok.Data;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 /**
  * 客户端配置类
  *
@@ -26,10 +23,6 @@ public class FastdfsConfiguration {
      * tracker连接超时时间，单位为毫秒
      */
     private Integer connectTimeout = 5000;
-    /**
-     * 编码ISO8859-1 UTF-8
-     */
-    private Charset charset = StandardCharsets.UTF_8;
     /**
      * 是否开启放到链功能，默认为false
      */

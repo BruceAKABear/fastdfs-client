@@ -83,11 +83,12 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/25 22:34
      */
-    public String doUploadFile(@NotNull byte[] fileBytes, byte[] waterMarkFileBytes, String fileName, List<Object> metadata,
+    public String doUploadFile(@NotNull byte[] fileBytes, byte[] waterMarkFileBytes, String fileName, List<String> metadata,
             FastdfsConfiguration fastdfsConfiguration) {
         String groupName = null;
         String remoteFilename = null;
         BasicStorageInfo uploadStorage = null;
+        String[] results = new String[2];
         try {
             //获取上传文件目的地storage
             uploadStorage = getUploadStorage(fastdfsConfiguration);
@@ -122,13 +123,15 @@ public class FastdfsCore {
             ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
             groupName = new String(responseData.getBody(), 0, 16).trim();
             remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
-
+            //主文件地址
+            results[0] = uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
+            //上传缩略图
+            results[1] = doUploadSlaveFile(fileBytes, fileName, waterMarkFileBytes, fastdfsConfiguration);
             //如果需要上传metadata启动上传metadata线程
             if (CollectionUtils.isNotEmpty(metadata)) {
                 new Thread(new UploadMetadataThread(groupName, remoteFilename, metadata, storageSocket)).start();
-            } else {
-                storageSocket.close();
             }
+            storageSocket.close();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
@@ -175,29 +178,12 @@ public class FastdfsCore {
                 }
                 //TODO 上传缩略图
                 if (ArrayUtils.isNotEmpty(thumbnailBytes)) {
-                    Socket socket = new Socket();
 
                 }
 
             }
         }
         return null;
-    }
-
-    /**
-     * 上传metadata
-     *
-     * @param groupName 文件组名
-     * @param remoteFileName 远程文件名
-     * @param metadata metadata数据
-     * @param fastdfsConfiguration 配置
-     * @return java.lang.Boolean true上传成功false上传失败
-     * @author 邓艺
-     * @date 2019/1/24 9:38
-     */
-    public Boolean doUploadMetadeta(String groupName, String remoteFileName, List<Object> metadata, FastdfsConfiguration fastdfsConfiguration) {
-
-        return false;
     }
 
     /**
