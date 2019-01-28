@@ -3,6 +3,7 @@ package pro.dengyi.fastdfs.core;
 import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
@@ -10,14 +11,9 @@ import pro.dengyi.fastdfs.constantenum.SystemStatus;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
 import pro.dengyi.fastdfs.threads.UploadMetadataThread;
-import pro.dengyi.fastdfs.utils.FileNameUtil;
-import pro.dengyi.fastdfs.utils.ProtocolUtil;
-import pro.dengyi.fastdfs.utils.ResponseDataUtil;
-import pro.dengyi.fastdfs.utils.TrackerUtil;
+import pro.dengyi.fastdfs.utils.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -80,13 +76,15 @@ public class FastdfsCore {
      * 执行上传文件
      *
      * @param fileBytes 文件字节数组
+     * @param waterMarkFileBytes 水印文件字节数组
      * @param fileName 文件名
      * @param metadata 元数据
      * @return java.lang.String
      * @author 邓艺
      * @date 2019/1/25 22:34
      */
-    public String doUploadFile(@NotNull byte[] fileBytes, String fileName, List<Object> metadata, FastdfsConfiguration fastdfsConfiguration) {
+    public String doUploadFile(@NotNull byte[] fileBytes, byte[] waterMarkFileBytes, String fileName, List<Object> metadata,
+            FastdfsConfiguration fastdfsConfiguration) {
         String groupName = null;
         String remoteFilename = null;
         BasicStorageInfo uploadStorage = null;
@@ -94,6 +92,7 @@ public class FastdfsCore {
             //获取上传文件目的地storage
             uploadStorage = getUploadStorage(fastdfsConfiguration);
             Socket storageSocket = new Socket(uploadStorage.getIp(), Math.toIntExact(uploadStorage.getPort()));
+            storageSocket.setSoTimeout(fastdfsConfiguration.getNetworkTimeOut());
             //上传普通文件
             //1. 第一位为存储路径，后8位长度
             byte[] bodyDataHeader = new byte[1 + 8];
@@ -123,10 +122,7 @@ public class FastdfsCore {
             ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
             groupName = new String(responseData.getBody(), 0, 16).trim();
             remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
-            //判断是否要上传主从文件（缩略图）
-            if (fastdfsConfiguration.getOpenThumbnail()) {
 
-            }
             //如果需要上传metadata启动上传metadata线程
             if (CollectionUtils.isNotEmpty(metadata)) {
                 new Thread(new UploadMetadataThread(groupName, remoteFilename, metadata, storageSocket)).start();
@@ -137,6 +133,55 @@ public class FastdfsCore {
             log.error(e.getMessage());
         }
         return uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
+    }
+
+    /**
+     * 上传主从文件
+     * <br/>
+     * 目的只是为了上传缩略图，所以很多处理方式将写死
+     *
+     * @param fileBytes
+     * @param waterMarkFileBytes
+     * @param fastdfsConfiguration
+     * @return java.lang.String
+     * @author 邓艺
+     * @date 2019/1/28 16:33
+     */
+    public String doUploadSlaveFile(byte[] fileBytes, String fileName, byte[] waterMarkFileBytes, FastdfsConfiguration fastdfsConfiguration) {
+        //是否需要上传缩略图
+        if (fastdfsConfiguration.getOpenThumbnail()) {
+            //判断文件是否是图片
+            if (PictureUtil.isPicture(fileName)) {
+                byte[] thumbnailBytes = null;
+                switch (fastdfsConfiguration.getThumbnailStrategy()) {
+                case 0:
+                    //判断是否要添加水印
+                    if (fastdfsConfiguration.getOpenWaterMark()) {
+                        thumbnailBytes = PictureUtil.getThumbnail(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    }
+                    break;
+                case 1:
+                    if (fastdfsConfiguration.getOpenWaterMark()) {
+                        thumbnailBytes = PictureUtil.getThumbnailBasedOnWidth(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    }
+                    break;
+                case 2:
+                    if (fastdfsConfiguration.getOpenWaterMark()) {
+                        thumbnailBytes = PictureUtil.getThumbnailBasedOnHeight(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    }
+                    break;
+                default:
+                    log.error("缩略图策略配置错误");
+                }
+                //TODO 上传缩略图
+                if (ArrayUtils.isNotEmpty(thumbnailBytes)) {
+                    Socket socket = new Socket();
+
+                }
+
+            }
+        }
+        return null;
     }
 
     /**
@@ -221,18 +266,6 @@ public class FastdfsCore {
         Random random = new Random();
         int r = random.nextInt(serverCount);
         return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), r * 39, false);
-    }
-
-    public String doUploadSlaveFile(FastdfsConfiguration fastdfsConfiguration, byte[] fileBytes, String groupName, String masterFileName,
-            String fileNameSuffix) {
-        //判断是否需要添加水印
-        if (fastdfsConfiguration.getOpenWaterMark()) {
-
-        }
-
-        InputStream inputStream = new ByteArrayInputStream(fileBytes);
-
-        return null;
     }
 
     /**
