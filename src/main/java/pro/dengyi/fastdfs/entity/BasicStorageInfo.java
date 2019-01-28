@@ -26,7 +26,8 @@ public class BasicStorageInfo {
      */
     private Long port;
     /**
-     * 存储序列,默认值为0
+     * 存储路径索引，基于0
+     * 什么是存储路径？一台存储服务器可以设置多个存储路径，通过索引来区分上传到了什么路径
      */
     private Byte storePath = (byte) 0;
 
