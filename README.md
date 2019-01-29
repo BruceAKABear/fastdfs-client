@@ -14,24 +14,8 @@
 3. 欢迎大家积极参与创造出优秀的文件系统
 4. 由于fastdfs很多设计个人觉得没有必要所以没有实现，需要良久思考
 
-## 所提供的功能
-### 1.系统相关
-1. 查询存储组
-查询所有存储的基本信息
-```java
-
-```
-2. 查询每个存储组下所有存储storage信息
-查询制定group存储组下所有的存储服务器的基本信息
-
-3. 将存储服务器从存储服务器中删除
-
-```java
-
-```
-### 2 文件相关
-
-### 3.2 创建配置对象
+## 客户端使用
+### 客户端初始化
 ```java
 FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
 fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
@@ -39,26 +23,57 @@ fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.19
 FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
 //利用fasdfs模板对文件进行操作
 ```
+
 + 配置文件解释
-  - networkTimeOut 网络连接超时时间,单位为毫秒  默认超时时间30秒
+  - networkTimeOut 文件操作连接超时时间,单位为毫秒  **默认超时时间30秒**
   - trackers tracker集合 
-  - connectTimeout 连接tracker超时时间 
-  - openAntiSteal 是否开启防盗链功能，默认关闭
-  - secretKey 防盗链密钥  
-  - openThumbnail 是否开启缩略图  默认关闭，缩略图之对于图片有效
+  - connectTimeout 连接tracker超时时间，单位毫秒 **默认超时时间为5秒**
+  - openAntiSteal 是否开启防盗链功能 **默认关闭,如果开启需要同步在服务器端配置文件中修改**
+  - secretKey 防盗链密钥  **默认为fastdfs123456**
+  - openThumbnail 是否开启缩略图  **默认关闭,缩略图只对于图片有效**
   - thumbnailStrategy 缩略图生成策略 0严格按照给定尺寸生成，1宽度优先，2高度优先
   - thumbnailWidth 缩略图宽度
   - thumbnailHeight 缩略图高度
   - openWaterMark 是否开启水印
-  - waterMarktransparency  水印透明度0-1
-  - waterMarkPosition 水印位置 一共9中位置
+  - waterMarktransparency  水印透明度0-1之间
+  - waterMarkPosition 水印位置 一共9种位置
   > TOP_LEFT:左上      TOP_CENTER:上中     TOP_RIGHT:右上
   > CENTER_LEFT:左中   CENTER:中中         CENTER_RIGHT:右中
   > BOTTOM_LEFT:左下   BOTTOM_CENTER:下中  BOTTOM_RIGHT:右下
   - accessHead 文件访问方式  默认http方式
-  - accessPort 文件访问端口 
-### 3.3 调用API进行操作
-#### 3.3.1 查询所有存储服务器组信息
+  - accessPort 文件访问端口(nginx访问端口) 
+  
+### 1. 系统相关
+1.1. 查询存储组
+查询所有存储的基本信息
+```java
+List<StorageGroupInfo> allStorageGroupInfo = fastdfsTemplate.getAllStorageGroupInfo();
+```
+1.2. 查询每个存储组下所有存储storage信息
+查询制定group存储组下所有的存储服务器的基本信息
+
+```java
+List<StorageInfo> allStorageInfo = fastdfsTemplate.doGetAllStorageInfo(groupName);
+```
+> 也可以通过指定groupName和存储服务器的ip查询指定的存储服务器的相关信息(但是文件会在同组内自行同步，那么查询单个
+存储服务器将没什么意义)
+
+
+
+
+1.3. 将存储服务器从存储服务器中删除
+
+```java
+
+```
+### 2 文件相关
+2.1. 系统初始化
+
+
+
+2. 调用API进行操作
+
+2.1 查询所有存储服务器组信息
 ```java
  List<StorageGroupInfo> allStorageGroupInfo = fastdfsTemplate.getAllStorageGroupInfo();
 ```
