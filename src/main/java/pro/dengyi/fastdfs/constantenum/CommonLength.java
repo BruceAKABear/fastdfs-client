@@ -22,10 +22,6 @@ public enum CommonLength {
      */
     STORAGE_ID_LENGTH(16),
     /**
-     * 最大ip长度16
-     */
-    MAX_IP_LENGTH(15),
-    /**
      * 组大组名长度16
      */
     MAX_GROUPNAME_LENGTH(16);
