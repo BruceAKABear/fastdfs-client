@@ -13,6 +13,10 @@ public enum ControlCode {
      */
     UPLOAD((byte) 11),
     /**
+     * 上传组从文件系统命令码
+     */
+    UPLOAD_SLAVE((byte) 21),
+    /**
      * tracker查询上传storage
      */
     TRACKER_QUERY_UPLOAD_STORAGE((byte) 101),
@@ -35,6 +39,10 @@ public enum ControlCode {
      * 下载文件命令码
      */
     DOWNLOAD((byte) 14),
+    /**
+     * 获取metadata
+     */
+    GET_METADATA((byte) 15),
 
     /**
      * 断点续传
@@ -68,4 +76,5 @@ public enum ControlCode {
 
     public Byte getValue() {
         return value;
-    }}
+    }
+}

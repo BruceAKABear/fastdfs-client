@@ -1,13 +1,16 @@
 package pro.dengyi.test;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.core.FastdfsTemplate;
 import pro.dengyi.fastdfs.entity.StorageGroupInfo;
 import pro.dengyi.fastdfs.entity.StorageInfo;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -63,7 +66,7 @@ public class UseTest {
      */
     @Test
     public void demo3() throws IOException {
-        File file =  new File("C:\\Users\\dengyi\\Desktop\\1111.jpg");
+        File file = new File("C:\\Users\\dengyi\\Desktop\\1111.jpg");
         FileInputStream fileInputStream = new FileInputStream(file);
         byte[] fileBytes = new byte[(int) file.length()];
         fileInputStream.read(fileBytes);
@@ -72,8 +75,7 @@ public class UseTest {
         fastdfsConfiguration.setTrackers(new String[]{"61.153.187.80:22122"});
         //创建模板对象
         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-        String s = fastdfsTemplate.uploadFile(fileBytes, file.getName());
-        System.out.println(s);
+        fastdfsTemplate.uploadFile(fileBytes, file.getName());
 
     }
 
@@ -87,10 +89,34 @@ public class UseTest {
         //创建模板对象
         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
         byte[] bytes = fastdfsTemplate.downloadFile("http://61.153.187.80:9000/group1/M00/00/1D/wKgBDFxNqL-AJMAxAAgq1ZfG2-8804.jpg");
-        String s = fastdfsTemplate.uploadFile(bytes, "2222.jpg");
-        System.out.println(s);
+        fastdfsTemplate.uploadFile(bytes, "2222.jpg");
 
     }
 
+    /**
+     * 测试上传缩略图
+     */
+    @Test
+    public void demo5() throws IOException {
+        File file = new File("C:\\Users\\dengyi\\Desktop\\112.jpg");
+        FileInputStream fileInputStream = new FileInputStream(file);
+        byte[] fileBytes = new byte[(int) file.length()];
+        fileInputStream.read(fileBytes);
+        FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+        fastdfsConfiguration.setTrackers(new String[]{"192.168.0.178:22122"});
+        fastdfsConfiguration.setOpenThumbnail(true);
+        fastdfsConfiguration.setAccessPort(9000);
+        fastdfsConfiguration.setThumbnailWidth(100);
+        fastdfsConfiguration.setThumbnailHeight(200);
+        //创建模板对象
+        FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
+        String[] uploadFile = fastdfsTemplate.uploadFile(fileBytes, file.getName());
+        if (ArrayUtils.isNotEmpty(uploadFile)) {
+            for (String s : uploadFile) {
+                System.out.println(s);
+            }
+        }
+
+    }
 
 }

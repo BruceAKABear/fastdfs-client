@@ -103,7 +103,7 @@ public class ProtocolUtil {
             byte[] dataBody = new byte[Math.toIntExact(responseHeader.getDataBodyLength())];
             int totalBytes = 0;
             int remainBytes = Math.toIntExact(responseHeader.getDataBodyLength());
-            int bytes;
+            int bytes = 0;
             while (totalBytes < responseHeader.getDataBodyLength()) {
                 if ((bytes = inputStream.read(dataBody, totalBytes, remainBytes)) < 0) {
                     break;
@@ -111,7 +111,7 @@ public class ProtocolUtil {
                 totalBytes += bytes;
                 remainBytes -= bytes;
             }
-            if (inputStream.read(dataBody) != Math.toIntExact(responseHeader.getDataBodyLength())) {
+            if (bytes != Math.toIntExact(responseHeader.getDataBodyLength())) {
                 throw new FastdfsException("读取到的字节数和期望数据数不相同");
             }
             return new ReceiveData((byte) 0, dataBody);

@@ -38,4 +38,5 @@ public enum CommonLength {
 
     public Integer getLength() {
         return length;
-    }}
+    }
+}

@@ -4,6 +4,7 @@ import com.sun.istack.internal.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import pro.dengyi.fastdfs.config.FastdfsConfiguration;
 import pro.dengyi.fastdfs.constantenum.CommonLength;
 import pro.dengyi.fastdfs.constantenum.ControlCode;
@@ -47,7 +48,7 @@ public class FastdfsCore {
         List<Socket> allTrackerSocket = TrackerUtil.getAllTrackerSocket(fastdfsConfiguration.getTrackers());
         if (CollectionUtils.isNotEmpty(allTrackerSocket)) {
             //定义删除成功标识
-            Boolean flag = false;
+            boolean flag = false;
             for (Socket trackerSocket : allTrackerSocket) {
                 byte[] standardGroupNameBytes = new byte[CommonLength.GROUP_NAME_MAX_LENGTH.getLength()];
                 byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
@@ -83,7 +84,7 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/25 22:34
      */
-    public String doUploadFile(@NotNull byte[] fileBytes, byte[] waterMarkFileBytes, String fileName, List<String> metadata,
+    public String[] doUploadFile(@NotNull byte[] fileBytes, byte[] waterMarkFileBytes, String fileName, List<String> metadata,
             FastdfsConfiguration fastdfsConfiguration) {
         String groupName = null;
         String remoteFilename = null;
@@ -97,7 +98,6 @@ public class FastdfsCore {
             //上传普通文件
             //1. 第一位为存储路径，后8位长度
             byte[] bodyDataHeader = new byte[1 + 8];
-            //TODO 存储index
             bodyDataHeader[0] = 0;
             byte[] fileLengthByteArray = ProtocolUtil.long2ByteArray((long) fileBytes.length);
             System.arraycopy(fileLengthByteArray, 0, bodyDataHeader, 1, 8);
@@ -124,10 +124,12 @@ public class FastdfsCore {
             groupName = new String(responseData.getBody(), 0, 16).trim();
             remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
             //主文件地址
-            results[0] = uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
-            //上传缩略图
-            results[1] = doUploadSlaveFile(fileBytes, fileName, waterMarkFileBytes, fastdfsConfiguration);
-            //如果需要上传metadata启动上传metadata线程
+            results[0] = fastdfsConfiguration.getAccessHead() + uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/"
+                    + remoteFilename;
+            //TODO 上传缩略图
+            results[1] = fastdfsConfiguration.getAccessHead() + uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + doUploadSlaveFile(
+                    storageSocket, remoteFilename, null, null, fileBytes, fileName, waterMarkFileBytes, fastdfsConfiguration);
+            //TODO 启动metadata上传线程
             if (CollectionUtils.isNotEmpty(metadata)) {
                 new Thread(new UploadMetadataThread(groupName, remoteFilename, metadata, storageSocket)).start();
             }
@@ -135,14 +137,16 @@ public class FastdfsCore {
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-        return uploadStorage.getIp() + ":" + fastdfsConfiguration.getAccessPort() + "/" + groupName + "/" + remoteFilename;
+        return results;
     }
 
     /**
      * 上传主从文件
      * <br/>
      * 目的只是为了上传缩略图，所以很多处理方式将写死
+     * 只为图片上传缩略图，其他文件将不进行处理
      *
+     * @param storageSocket 存储服务器socket连接
      * @param fileBytes
      * @param waterMarkFileBytes
      * @param fastdfsConfiguration
@@ -150,34 +154,80 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/28 16:33
      */
-    public String doUploadSlaveFile(byte[] fileBytes, String fileName, byte[] waterMarkFileBytes, FastdfsConfiguration fastdfsConfiguration) {
+    public String doUploadSlaveFile(Socket storageSocket, String masterFileName, String suffixName, String extName, byte[] fileBytes, String fileName,
+            byte[] waterMarkFileBytes, FastdfsConfiguration fastdfsConfiguration) {
         //是否需要上传缩略图
         if (fastdfsConfiguration.getOpenThumbnail()) {
             //判断文件是否是图片
             if (PictureUtil.isPicture(fileName)) {
+                //带水印的缩略图文件字节数组
                 byte[] thumbnailBytes = null;
                 switch (fastdfsConfiguration.getThumbnailStrategy()) {
                 case 0:
                     //判断是否要添加水印
-                    if (fastdfsConfiguration.getOpenWaterMark()) {
-                        thumbnailBytes = PictureUtil.getThumbnail(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
-                    }
+                    thumbnailBytes = PictureUtil.getThumbnail(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 case 1:
-                    if (fastdfsConfiguration.getOpenWaterMark()) {
-                        thumbnailBytes = PictureUtil.getThumbnailBasedOnWidth(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
-                    }
+                    thumbnailBytes = PictureUtil.getThumbnailBasedOnWidth(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 case 2:
-                    if (fastdfsConfiguration.getOpenWaterMark()) {
-                        thumbnailBytes = PictureUtil.getThumbnailBasedOnHeight(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
-                    }
+                    thumbnailBytes = PictureUtil.getThumbnailBasedOnHeight(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 default:
                     log.error("缩略图策略配置错误");
                 }
                 //TODO 上传缩略图
                 if (ArrayUtils.isNotEmpty(thumbnailBytes)) {
+                    //主文件名数组
+                    byte[] masterFileNameBytes = masterFileName.getBytes(StandardCharsets.UTF_8);
+                    byte[] masterFileNameLengthByteArray = ProtocolUtil.long2ByteArray((long) masterFileName.length());
+                    byte[] bodyDataHeader = new byte[16];
+                    //封装主文件名长度
+                    System.arraycopy(masterFileNameLengthByteArray, 0, bodyDataHeader, 0, 8);
+                    byte[] fileLengthByteArray = ProtocolUtil.long2ByteArray((long) thumbnailBytes.length);
+                    System.arraycopy(fileLengthByteArray, 0, bodyDataHeader, 8, 8);
+                    //标准后缀名字节数组
+                    byte[] standardExtNameByteArry = new byte[6];
+                    byte[] realNameByteArray = FileNameUtil.getExtNameWithDot(fileName).substring(1).getBytes(StandardCharsets.UTF_8);
+                    System.arraycopy(realNameByteArray, 0, standardExtNameByteArry, 0, realNameByteArray.length);
+                    //标准从文件后缀名
+                    byte[] standardSuffixName = new byte[16];
+                    //如果没有传入扩展名就直接使用比例
+                    //TODO 后缀名中不能包含星号
+                    if (StringUtils.isBlank(suffixName)) {
+                        byte[] defaultSuffixNameBytes = ("_" + fastdfsConfiguration.getThumbnailWidth() + "X" + fastdfsConfiguration.getThumbnailHeight())
+                                .getBytes(StandardCharsets.UTF_8);
+                        System.arraycopy(defaultSuffixNameBytes, 0, standardSuffixName, 0, defaultSuffixNameBytes.length);
+
+                    } else {
+                        byte[] suffixNameBytes = suffixName.getBytes(StandardCharsets.UTF_8);
+                        System.arraycopy(suffixNameBytes, 0, standardSuffixName, 0, suffixNameBytes.length);
+                    }
+
+                    byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.UPLOAD_SLAVE.getValue(),
+                            (long) bodyDataHeader.length + standardSuffixName.length + standardExtNameByteArry.length + masterFileNameBytes.length
+                                    + thumbnailBytes.length, SystemStatus.SUCCESS.getValue());
+
+                    //封装数据
+                    byte[] wholeMessage = new byte[protoHeader.length + bodyDataHeader.length + standardSuffixName.length + standardExtNameByteArry.length
+                            + masterFileNameBytes.length];
+                    System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+                    System.arraycopy(bodyDataHeader, 0, wholeMessage, 10, 16);
+                    System.arraycopy(standardSuffixName, 0, wholeMessage, 26, 16);
+                    System.arraycopy(standardExtNameByteArry, 0, wholeMessage, 42, 6);
+                    System.arraycopy(masterFileNameBytes, 0, wholeMessage, 48, masterFileNameBytes.length);
+
+                    try {
+                        storageSocket.getOutputStream().write(wholeMessage);
+                        storageSocket.getOutputStream().write(thumbnailBytes);
+
+                        ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) -1);
+                        String groupName = new String(responseData.getBody(), 0, 16).trim();
+                        String remoteFilename = new String(responseData.getBody(), 16, responseData.getBody().length - 16);
+                        return groupName + "/" + remoteFilename;
+                    } catch (IOException e) {
+                        log.error(e.getMessage());
+                    }
 
                 }
 
@@ -195,7 +245,28 @@ public class FastdfsCore {
      * @author 邓艺
      * @date 2019/1/27 14:59
      */
-    public List<Object> doGetMetadata(String groupName, String remoteFileName) {
+    public List<String> doGetMetadata(@NotNull String groupName, @NotNull String remoteFileName, FastdfsConfiguration fastdfsConfiguration) {
+        BasicStorageInfo updateStorage = getUpdateStorage(groupName, remoteFileName, fastdfsConfiguration);
+        byte[] standardGroupNameBytes = new byte[CommonLength.GROUP_NAME_MAX_LENGTH.getLength()];
+        byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+        System.arraycopy(groupNameBytes, 0, standardGroupNameBytes, 0, groupNameBytes.length);
+        byte[] remoteFileNameBytes = remoteFileName.getBytes(StandardCharsets.UTF_8);
+        byte[] protoHeader = ProtocolUtil
+                .getProtoHeader(ControlCode.GET_METADATA.getValue(), (long) standardGroupNameBytes.length + remoteFileNameBytes.length, (byte) 0);
+
+        byte[] wholeMessage = new byte[protoHeader.length + standardGroupNameBytes.length + remoteFileNameBytes.length];
+        System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+        System.arraycopy(standardGroupNameBytes, 0, wholeMessage, 10, 16);
+        System.arraycopy(remoteFileNameBytes, 0, wholeMessage, 26, remoteFileNameBytes.length);
+        try {
+            Socket socket = new Socket(updateStorage.getIp(), Math.toIntExact(updateStorage.getPort()));
+            socket.getOutputStream().write(wholeMessage);
+            //获取返回值
+            ReceiveData responseData = ProtocolUtil.getResponseData(socket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+
+        } catch (IOException e) {
+            log.error("获取metadata时异常:" + e.getMessage());
+        }
         return null;
     }
 
@@ -322,24 +393,24 @@ public class FastdfsCore {
         List<BasicStorageInfo> downloadStorageInfos = getDownloadStorage(groupNameAndRemoteFileName[0], groupNameAndRemoteFileName[1], fastdfsConfiguration);
         //发送下载报文
         byte[] offSetByteArray = ProtocolUtil.long2ByteArray(offSet);
-        byte[] ByteArray = ProtocolUtil.long2ByteArray(downloadBytes);
+        byte[] byteArray = ProtocolUtil.long2ByteArray(downloadBytes);
         byte[] standardGroupNameByteArray = new byte[CommonLength.GROUP_NAME_MAX_LENGTH.getLength()];
         byte[] groupNameBytes = groupNameAndRemoteFileName[0].getBytes(StandardCharsets.UTF_8);
         System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
         byte[] remoteFileNameBytes = groupNameAndRemoteFileName[1].getBytes(StandardCharsets.UTF_8);
         //下载报文头
         byte[] protoHeader = ProtocolUtil.getProtoHeader(ControlCode.DOWNLOAD.getValue(),
-                (long) offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length + remoteFileNameBytes.length, (byte) 0);
-        byte[] wholeMessage = new byte[protoHeader.length + offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length
+                (long) offSetByteArray.length + byteArray.length + standardGroupNameByteArray.length + remoteFileNameBytes.length, (byte) 0);
+        byte[] wholeMessage = new byte[protoHeader.length + offSetByteArray.length + byteArray.length + standardGroupNameByteArray.length
                 + remoteFileNameBytes.length];
         //报文组装
         System.arraycopy(protoHeader, 0, wholeMessage, 0, protoHeader.length);
         System.arraycopy(offSetByteArray, 0, wholeMessage, protoHeader.length, offSetByteArray.length);
-        System.arraycopy(ByteArray, 0, wholeMessage, protoHeader.length + offSetByteArray.length, ByteArray.length);
-        System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, protoHeader.length + offSetByteArray.length + ByteArray.length,
+        System.arraycopy(byteArray, 0, wholeMessage, protoHeader.length + offSetByteArray.length, byteArray.length);
+        System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, protoHeader.length + offSetByteArray.length + byteArray.length,
                 standardGroupNameByteArray.length);
         System.arraycopy(remoteFileNameBytes, 0, wholeMessage,
-                protoHeader.length + offSetByteArray.length + ByteArray.length + standardGroupNameByteArray.length, remoteFileNameBytes.length);
+                protoHeader.length + offSetByteArray.length + byteArray.length + standardGroupNameByteArray.length, remoteFileNameBytes.length);
         //将数据写出
         try {
             Socket downloadStorage = new Socket(downloadStorageInfos.get(0).getIp(), Math.toIntExact(downloadStorageInfos.get(0).getPort()));

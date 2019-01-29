@@ -176,8 +176,9 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 15:39
      */
-    public String uploadFile(byte[] fileBytes, String fileName) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, fileName, null, fastdfsConfiguration);
+    public String[] uploadFile(byte[] fileBytes, String fileName) {
+        return doUploadFile(fileBytes, null, fileName, null, fastdfsConfiguration);
+
     }
 
     /**
@@ -189,8 +190,8 @@ public class FastdfsTemplate extends FastdfsCore {
      * @author 邓艺
      * @date 2019/1/22 15:53
      */
-    public String uploadFile(byte[] fileBytes, String fileName, List<String> metadata) {
-        return fastdfsConfiguration.getAccessHead() + doUploadFile(fileBytes, null, fileName, metadata, fastdfsConfiguration);
+    public String[] uploadFile(byte[] fileBytes, String fileName, List<String> metadata) {
+        return doUploadFile(fileBytes, null, fileName, metadata, fastdfsConfiguration);
     }
 
     /**

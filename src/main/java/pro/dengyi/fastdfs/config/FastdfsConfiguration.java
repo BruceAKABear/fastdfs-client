@@ -49,10 +49,6 @@ public class FastdfsConfiguration {
      */
     private Integer thumbnailHeight = 100;
     /**
-     * 是否开启水印
-     */
-    private Boolean openWaterMark = false;
-    /**
      * 缩略图透明度0-1之间
      */
     private Float waterMarktransparency = 0f;
