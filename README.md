@@ -80,16 +80,16 @@ List<StorageInfo> allStorageInfo = fastdfsTemplate.doGetAllStorageInfo(groupName
  List<StorageGroupInfo> allStorageGroupInfo = fastdfsTemplate.getAllStorageGroupInfo();
 ```
 
-#### 3.3.2 查询组下所有所有存储服务器相关信息
+2.2 查询组下所有所有存储服务器相关信息
 ```java
 List<StorageInfo> allStorageInfo = fastdfsTemplate.getAllStorageInfo(groupName);
 ```
-#### 3.3.3 文件上传
-##### 3.3.3.1 以文件字节数组的形式上传文件
+2.3 文件上传
+2.3.1 以文件字节数组的形式上传文件
 ```java
 String s = fastdfsTemplate.uploadFile(fileBytes, "112.jpg");
 ```
-#### 3.3.4 文件的删除
+2.4 文件的删除
 ```java
 
 ```

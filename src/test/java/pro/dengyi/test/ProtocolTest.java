@@ -242,15 +242,16 @@ public class ProtocolTest {
     /**
      * 获取从文件存储服务器（随机）
      */
-     @Test
-     public void demo8() throws IOException {
-         //1. 设置参数(必须参数为tracker地址)
-         FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
-         fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
-         //创建模板对象
-         FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-         BasicStorageInfo uploadMaterAndSlaveFileStorage = fastdfsTemplate.getUploadSlaveFileStorage(fastdfsConfiguration, "group1", "M00/00/00/wKjHBVxLnpiANuy-AAgoAP6sYQ8896.jpg");
-         System.out.println(uploadMaterAndSlaveFileStorage.getIp());
-     }
+    @Test
+    public void demo8() throws IOException {
+        //1. 设置参数(必须参数为tracker地址)
+        FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+        fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
+        //创建模板对象
+        FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
+        BasicStorageInfo uploadMaterAndSlaveFileStorage = fastdfsTemplate
+                .getUploadSlaveFileStorage(fastdfsConfiguration, "group1", "M00/00/00/wKjHBVxLnpiANuy-AAgoAP6sYQ8896.jpg");
+        System.out.println(uploadMaterAndSlaveFileStorage.getIp());
+    }
 
 }
