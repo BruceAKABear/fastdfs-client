@@ -25,7 +25,7 @@ public class IpAddressUtil {
         if (StringUtils.isNotBlank(singleAddress)) {
             return singleAddress.split(":");
         } else {
-            throw new FastdfsException("tracker配置的的ip和端口异常");
+            throw new FastdfsException("tracker配置异常");
         }
     }
 

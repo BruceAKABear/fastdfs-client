@@ -7,7 +7,7 @@ import org.apache.sanselan.ImageReadException;
 import org.apache.sanselan.Sanselan;
 import org.apache.sanselan.common.IImageMetadata;
 import org.junit.Test;
-import pro.dengyi.fastdfs.utils.PictureUtil;
+import pro.dengyi.fastdfs.utils.ThumbnailUtil;
 
 import javax.imageio.ImageIO;
 import java.io.*;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public class PictureTest {
     @Test
     public void demo1() {
-        boolean picture = PictureUtil.isPicture("111.zip");
+        boolean picture = ThumbnailUtil.isPicture("111.zip");
         System.out.println(picture);
     }
 

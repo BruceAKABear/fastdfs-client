@@ -16,14 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * 图片工具类
+ * 缩略图工具类
  *
  * @author 邓艺
  * @version v1.0
  * @date 2019-01-09 12:58
  */
 @Slf4j
-public class PictureUtil {
+public class ThumbnailUtil {
     //TODO 存在内存占用过大的情况，具体解决方法需要仔细考虑
 
     /**

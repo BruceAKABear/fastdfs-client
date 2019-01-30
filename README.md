@@ -17,14 +17,16 @@
 ## 客户端使用
 ### 客户端初始化
 ```java
+//1.创建配置对象
 FastdfsConfiguration fastdfsConfiguration = new FastdfsConfiguration();
+//2.对配置对象进行设置
 fastdfsConfiguration.setTrackers(new String[]{"192.168.199.2:22122", "192.168.199.3:22122"});
-//创建模板对象
+//3.创建操作模板对象，并将配置对象作为参数传入
 FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
-//利用fasdfs模板对文件进行操作
+//4.利用fasdfs模板对文件进行操作
 ```
 
-+ 配置文件解释
++ 配置对象属性解释
   - networkTimeOut 文件操作连接超时时间,单位为毫秒  **默认超时时间30秒**
   - trackers tracker集合 
   - connectTimeout 连接tracker超时时间，单位毫秒 **默认超时时间为5秒**
@@ -36,7 +38,7 @@ FastdfsTemplate fastdfsTemplate = new FastdfsTemplate(fastdfsConfiguration);
   - thumbnailHeight 缩略图高度
   - openWaterMark 是否开启水印
   - waterMarktransparency  水印透明度0-1之间
-  - waterMarkPosition 水印位置 一共9种位置
+  - waterMarkPosition 水印位置 一共9种位置 **默认为BOTTOM_RIGHT**
   > TOP_LEFT:左上      TOP_CENTER:上中     TOP_RIGHT:右上
   > CENTER_LEFT:左中   CENTER:中中         CENTER_RIGHT:右中
   > BOTTOM_LEFT:左下   BOTTOM_CENTER:下中  BOTTOM_RIGHT:右下

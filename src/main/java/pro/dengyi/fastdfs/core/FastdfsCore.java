@@ -11,6 +11,8 @@ import pro.dengyi.fastdfs.constantenum.ControlCode;
 import pro.dengyi.fastdfs.constantenum.SystemStatus;
 import pro.dengyi.fastdfs.entity.BasicStorageInfo;
 import pro.dengyi.fastdfs.entity.ReceiveData;
+import pro.dengyi.fastdfs.entity.StorageInfo;
+import pro.dengyi.fastdfs.exception.FastdfsException;
 import pro.dengyi.fastdfs.threads.UploadMetadataThread;
 import pro.dengyi.fastdfs.utils.*;
 
@@ -71,6 +73,49 @@ public class FastdfsCore {
             return false;
         }
 
+    }
+
+    /**
+     * 获取存储组下指定ip的storage的信息
+     *
+     * @param groupName 组名不能为空
+     * @param storageIpAddr 存储服务器的IP地址,可以为空
+     * @return List  StorageInfo集合
+     * @author 邓艺
+     * @date 2019/1/18 12:38
+     */
+    public List<StorageInfo> doGetAllStorageInfo(@NotNull String groupName, String storageIpAddr, @NotNull FastdfsConfiguration fastdfsConfiguration)
+            throws FastdfsException, IOException {
+        if (StringUtils.isBlank(groupName)) {
+            throw new FastdfsException("获取storage信息时，groupName不能为空");
+        } else {
+            //创建trackersocket
+            Socket trackerSocket = TrackerUtil.getTrackerSocket(fastdfsConfiguration.getTrackers());
+            byte[] protoHeader = null;
+            byte[] wholeMessage = null;
+            byte[] standardGroupNameByteArray = new byte[CommonLength.MAX_GROUPNAME_LENGTH.getLength()];
+            byte[] groupNameBytes = groupName.getBytes(StandardCharsets.UTF_8);
+            System.arraycopy(groupNameBytes, 0, standardGroupNameByteArray, 0, groupNameBytes.length);
+            if (StringUtils.isNotBlank(storageIpAddr)) {
+                byte[] storageIpAddrBytes = storageIpAddr.getBytes(StandardCharsets.UTF_8);
+                protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), (long) 16 + storageIpAddrBytes.length,
+                        SystemStatus.SUCCESS.getValue());
+                wholeMessage = new byte[42];
+                System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+                System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
+                System.arraycopy(storageIpAddrBytes, 0, wholeMessage, 26, storageIpAddrBytes.length);
+            } else {
+                protoHeader = ProtocolUtil.getProtoHeader(ControlCode.TRACKER_GET_ALL_STORAGEINFO.getValue(), 16L, SystemStatus.SUCCESS.getValue());
+                wholeMessage = new byte[26];
+                System.arraycopy(protoHeader, 0, wholeMessage, 0, 10);
+                System.arraycopy(standardGroupNameByteArray, 0, wholeMessage, 10, 16);
+            }
+            assert trackerSocket != null;
+            trackerSocket.getOutputStream().write(wholeMessage);
+            ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+            trackerSocket.close();
+            return ResponseDataUtil.getAllStorageInfo(responseData.getBody());
+        }
     }
 
     /**
@@ -159,19 +204,19 @@ public class FastdfsCore {
         //是否需要上传缩略图
         if (fastdfsConfiguration.getOpenThumbnail()) {
             //判断文件是否是图片
-            if (PictureUtil.isPicture(fileName)) {
+            if (ThumbnailUtil.isPicture(fileName)) {
                 //带水印的缩略图文件字节数组
                 byte[] thumbnailBytes = null;
                 switch (fastdfsConfiguration.getThumbnailStrategy()) {
                 case 0:
                     //判断是否要添加水印
-                    thumbnailBytes = PictureUtil.getThumbnail(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    thumbnailBytes = ThumbnailUtil.getThumbnail(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 case 1:
-                    thumbnailBytes = PictureUtil.getThumbnailBasedOnWidth(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    thumbnailBytes = ThumbnailUtil.getThumbnailBasedOnWidth(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 case 2:
-                    thumbnailBytes = PictureUtil.getThumbnailBasedOnHeight(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
+                    thumbnailBytes = ThumbnailUtil.getThumbnailBasedOnHeight(fileBytes, waterMarkFileBytes, fastdfsConfiguration);
                     break;
                 default:
                     log.error("缩略图策略配置错误");
@@ -318,6 +363,7 @@ public class FastdfsCore {
         System.arraycopy(masterFileNameBytes, 0, wholeMessage, 26, masterFileNameBytes.length);
         trackerSocket.getOutputStream().write(wholeMessage);
         ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), ControlCode.SERVER_RESPONSE.getValue(), (long) -1);
+        trackerSocket.close();
         //39 =组名16+ip15+长度8
         int serverCount = responseData.getBody().length / 39;
         Random random = new Random();
@@ -463,10 +509,11 @@ public class FastdfsCore {
             trackerSocket.getOutputStream().write(wholeMessage);
             //5. 获取响应数据
             ReceiveData responseData = ProtocolUtil.getResponseData(trackerSocket.getInputStream(), (byte) 100, (long) -1);
+            trackerSocket.close();
             return ResponseDataUtil.putDataInToBasicStorageInfo(responseData.getBody(), 0, false);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
 
         return null;
@@ -511,6 +558,7 @@ public class FastdfsCore {
             storageSocket.getOutputStream().write(wholeMessage);
             //5. 读取返回数据
             ReceiveData responseData = ProtocolUtil.getResponseData(storageSocket.getInputStream(), (byte) 100, (long) 0);
+            storageSocket.close();
             if (responseData.getErrorNo() == 0) {
                 return true;
             } else {

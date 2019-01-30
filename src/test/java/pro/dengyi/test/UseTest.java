@@ -52,7 +52,7 @@ public class UseTest {
         //进行操作
         String groupName = "group1";
         //        String ipaddr = "192.168.199.7";
-        List<StorageInfo> allStorageInfo = fastdfsTemplate.doGetAllStorageInfo(groupName);
+        List<StorageInfo> allStorageInfo = fastdfsTemplate.getAllStorageInfo(groupName);
         if (CollectionUtils.isNotEmpty(allStorageInfo)) {
             for (StorageInfo storageInfo : allStorageInfo) {
                 System.out.println(storageInfo);
