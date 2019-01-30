@@ -7,6 +7,7 @@
 2. 在重构时着重考虑客户端在高并发时的可用性
 3. 客户端更方便的与优秀框架spring整合
 4. 提供springboot启动器，极大地简化fastdfs与springboot的整合
+> 启动器远吗地址为: https://github.com/BruceAKABear/fastdfs-spring-boot-starter
 5. 提供缩略图上传功能，同时能为缩略图添加水印
 ## 期待与展望
 1. 由于自己知识浅薄，客户端内很多部分需要推敲，欢迎大家指正
@@ -15,6 +16,23 @@
 4. 由于fastdfs很多设计个人觉得没有必要所以没有实现，需要良久思考
 
 ## 客户端使用
+### maven添加依赖
+1. 普通项目maven依赖
+```java
+<dependency>
+    <groupId>pro.dengyi</groupId>
+    <artifactId>fastdfs-client</artifactId>
+    <version>0.1</version>
+</dependency>
+```
+2. springboot项目maven依赖
+```java
+<dependency>
+    <groupId>pro.dengyi</groupId>
+    <artifactId>fastdfs-spring-boot-starter</artifactId>
+    <version>0.1</version>
+</dependency>
+```
 ### 客户端初始化
 ```java
 //1.创建配置对象
