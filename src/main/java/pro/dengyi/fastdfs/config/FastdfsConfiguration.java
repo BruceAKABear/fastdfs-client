@@ -24,7 +24,7 @@ public class FastdfsConfiguration {
      */
     private Integer connectTimeout = 5000;
     /**
-     * 是否开启放到链功能，默认为false
+     * 是否开启放到链功能，默认为false(如果使用防盗链功能需要服务端配置文件中开启)
      */
     private Boolean openAntiSteal = false;
     /**
